@@ -14,16 +14,426 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      found_pets: {
+        Row: {
+          breed: string | null
+          color: string
+          created_at: string
+          date_found: string
+          description: string | null
+          found_address: string | null
+          found_lat: number | null
+          found_lng: number | null
+          holding_location: string | null
+          id: string
+          photos: string[] | null
+          shelter_id: string | null
+          species: string
+          status: string
+          updated_at: string
+          user_id: string
+          video: string | null
+        }
+        Insert: {
+          breed?: string | null
+          color: string
+          created_at?: string
+          date_found: string
+          description?: string | null
+          found_address?: string | null
+          found_lat?: number | null
+          found_lng?: number | null
+          holding_location?: string | null
+          id?: string
+          photos?: string[] | null
+          shelter_id?: string | null
+          species: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          video?: string | null
+        }
+        Update: {
+          breed?: string | null
+          color?: string
+          created_at?: string
+          date_found?: string
+          description?: string | null
+          found_address?: string | null
+          found_lat?: number | null
+          found_lng?: number | null
+          holding_location?: string | null
+          id?: string
+          photos?: string[] | null
+          shelter_id?: string | null
+          species?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          video?: string | null
+        }
+        Relationships: []
+      }
+      lost_pets: {
+        Row: {
+          age: string | null
+          breed: string | null
+          color: string
+          contact_email: string | null
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          date_lost: string
+          description: string | null
+          gender: string | null
+          id: string
+          last_seen_address: string | null
+          last_seen_lat: number | null
+          last_seen_lng: number | null
+          microchip: string | null
+          pet_name: string
+          photos: string[] | null
+          species: string
+          status: string
+          updated_at: string
+          user_id: string
+          video: string | null
+        }
+        Insert: {
+          age?: string | null
+          breed?: string | null
+          color: string
+          contact_email?: string | null
+          contact_name: string
+          contact_phone: string
+          created_at?: string
+          date_lost: string
+          description?: string | null
+          gender?: string | null
+          id?: string
+          last_seen_address?: string | null
+          last_seen_lat?: number | null
+          last_seen_lng?: number | null
+          microchip?: string | null
+          pet_name: string
+          photos?: string[] | null
+          species: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          video?: string | null
+        }
+        Update: {
+          age?: string | null
+          breed?: string | null
+          color?: string
+          contact_email?: string | null
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          date_lost?: string
+          description?: string | null
+          gender?: string | null
+          id?: string
+          last_seen_address?: string | null
+          last_seen_lat?: number | null
+          last_seen_lng?: number | null
+          microchip?: string | null
+          pet_name?: string
+          photos?: string[] | null
+          species?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          video?: string | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read?: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read?: boolean | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          device_token: string | null
+          email: string | null
+          home_address: string | null
+          id: string
+          name: string
+          phone: string | null
+          profile_photo: string | null
+          subscription_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_token?: string | null
+          email?: string | null
+          home_address?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          profile_photo?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_token?: string | null
+          email?: string | null
+          home_address?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          profile_photo?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rural_partners: {
+        Row: {
+          county: string | null
+          created_at: string
+          hunting_area: string | null
+          id: string
+          name: string
+          trail_cam_uploads: string[] | null
+          user_id: string
+        }
+        Insert: {
+          county?: string | null
+          created_at?: string
+          hunting_area?: string | null
+          id?: string
+          name: string
+          trail_cam_uploads?: string[] | null
+          user_id: string
+        }
+        Update: {
+          county?: string | null
+          created_at?: string
+          hunting_area?: string | null
+          id?: string
+          name?: string
+          trail_cam_uploads?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shelters: {
+        Row: {
+          address: string
+          approved: boolean | null
+          created_at: string
+          email: string | null
+          id: string
+          logo: string | null
+          name: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          address: string
+          approved?: boolean | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo?: string | null
+          name: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          approved?: boolean | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      sightings: {
+        Row: {
+          created_at: string
+          id: string
+          location_address: string | null
+          location_lat: number | null
+          location_lng: number | null
+          notes: string | null
+          pet_id: string | null
+          photo: string | null
+          seen_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location_address?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          notes?: string | null
+          pet_id?: string | null
+          photo?: string | null
+          seen_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location_address?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          notes?: string | null
+          pet_id?: string | null
+          photo?: string | null
+          seen_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sponsors: {
+        Row: {
+          approved: boolean | null
+          business_name: string
+          created_at: string
+          id: string
+          logo: string | null
+          tier: string | null
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          business_name: string
+          created_at?: string
+          id?: string
+          logo?: string | null
+          tier?: string | null
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          business_name?: string
+          created_at?: string
+          id?: string
+          logo?: string | null
+          tier?: string | null
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      volunteers: {
+        Row: {
+          availability: string | null
+          county: string | null
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+          skills: string | null
+          user_id: string
+        }
+        Insert: {
+          availability?: string | null
+          county?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string | null
+          skills?: string | null
+          user_id: string
+        }
+        Update: {
+          availability?: string | null
+          county?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          skills?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "user"
+        | "shelter"
+        | "volunteer"
+        | "rural_partner"
+        | "sponsor"
+        | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +560,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "user",
+        "shelter",
+        "volunteer",
+        "rural_partner",
+        "sponsor",
+        "admin",
+      ],
+    },
   },
 } as const
