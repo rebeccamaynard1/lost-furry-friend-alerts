@@ -5,10 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Upload, MapPin, Camera } from "lucide-react";
+import { AlertTriangle, Upload, MapPin, Camera, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function ReportLostPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     petName: "", species: "", breed: "", color: "", age: "",
     gender: "", microchip: "", dateLost: "", description: "",
@@ -17,11 +24,76 @@ export default function ReportLostPage() {
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // Duplicate check on microchip
+    if (field === "microchip" && value.length > 5) {
+      checkDuplicate(value);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const checkDuplicate = async (microchip: string) => {
+    const { data } = await supabase
+      .from("lost_pets")
+      .select("id, pet_name")
+      .eq("microchip", microchip)
+      .eq("status", "lost")
+      .limit(1);
+    if (data && data.length > 0) {
+      setDuplicateWarning(`A report for "${data[0].pet_name}" with this microchip already exists.`);
+    } else {
+      setDuplicateWarning(null);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast.error("Please sign in to report a lost pet.");
+      navigate("/login");
+      return;
+    }
+
+    setLoading(true);
+    const { data, error } = await supabase.from("lost_pets").insert({
+      user_id: user.id,
+      pet_name: formData.petName,
+      species: formData.species,
+      breed: formData.breed || null,
+      color: formData.color,
+      age: formData.age || null,
+      gender: formData.gender || null,
+      microchip: formData.microchip || null,
+      date_lost: formData.dateLost,
+      description: formData.description || null,
+      contact_name: formData.contactName,
+      contact_phone: formData.contactPhone,
+      contact_email: formData.contactEmail || null,
+    }).select().single();
+
+    if (error) {
+      toast.error("Failed to submit report: " + error.message);
+      setLoading(false);
+      return;
+    }
+
+    // Trigger alerts
+    try {
+      await supabase.functions.invoke("process-alerts", {
+        body: {
+          type: "lost",
+          pet_id: data.id,
+          pet_name: formData.petName,
+          species: formData.species,
+          breed: formData.breed,
+        },
+      });
+    } catch {
+      // Alerts failed but report was saved
+    }
+
     toast.success("Lost pet report submitted! Nearby users will be alerted.");
+    setLoading(false);
+    navigate("/my-pets");
   };
 
   return (
@@ -38,8 +110,28 @@ export default function ReportLostPage() {
         </div>
       </div>
 
+      {!user && (
+        <Card className="mb-6 border-warning">
+          <CardContent className="p-4 flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-warning flex-shrink-0" />
+            <p className="text-sm text-foreground">
+              Please <a href="/login" className="text-primary font-semibold underline">sign in</a> or{" "}
+              <a href="/signup" className="text-primary font-semibold underline">create an account</a> to submit a report.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {duplicateWarning && (
+        <Card className="mb-6 border-warning bg-warning/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-warning flex-shrink-0" />
+            <p className="text-sm text-foreground">{duplicateWarning}</p>
+          </CardContent>
+        </Card>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Pet Information */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-heading">Pet Information</CardTitle>
@@ -89,11 +181,11 @@ export default function ReportLostPage() {
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="microchip">Microchip Number</Label>
               <Input id="microchip" placeholder="e.g., 985112000123456" value={formData.microchip} onChange={(e) => handleChange("microchip", e.target.value)} />
+              <p className="text-xs text-muted-foreground">15-digit ISO standard or 10-digit AVID format</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Location & Date */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-heading">Location & Date</CardTitle>
@@ -113,7 +205,6 @@ export default function ReportLostPage() {
           </CardContent>
         </Card>
 
-        {/* Photos */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-heading">Photos & Video</CardTitle>
@@ -131,7 +222,6 @@ export default function ReportLostPage() {
           </CardContent>
         </Card>
 
-        {/* Contact Info */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-heading">Your Contact Info</CardTitle>
@@ -156,9 +246,9 @@ export default function ReportLostPage() {
           </CardContent>
         </Card>
 
-        <Button type="submit" variant="lost" size="lg" className="w-full rounded-xl py-6 text-lg">
+        <Button type="submit" variant="lost" size="lg" className="w-full rounded-xl py-6 text-lg" disabled={loading}>
           <AlertTriangle className="h-5 w-5 mr-2" />
-          Submit Lost Pet Report
+          {loading ? "Submitting..." : "Submit Lost Pet Report"}
         </Button>
       </form>
     </div>

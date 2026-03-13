@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  Home, Search, MapPin, MessageSquare, PawPrint, Eye, Building2,
+  Home, MapPin, MessageSquare, PawPrint, Eye, Building2,
   Users, TreePine, Heart, Crown, LayoutDashboard, Menu, X,
-  AlertTriangle, CheckCircle2, Megaphone, ChevronDown
+  AlertTriangle, CheckCircle2, Megaphone, LogIn, LogOut, User
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import NotificationBell from "@/components/NotificationBell";
+import PremiumBadge from "@/components/PremiumBadge";
 import logo from "@/assets/littlefoot-logo-1.png";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
@@ -35,6 +40,12 @@ const bottomNavItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { user, isPremium } = useAuth();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,18 +71,31 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              to="/report-lost"
-              className="rounded-lg bg-lost px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-lost/90 transition-colors sm:text-sm sm:px-4"
-            >
-              Report Lost
-            </Link>
-            <Link
-              to="/report-found"
-              className="rounded-lg bg-found px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-found/90 transition-colors sm:text-sm sm:px-4"
-            >
-              Report Found
-            </Link>
+            <NotificationBell />
+            {user ? (
+              <>
+                <div className="hidden sm:flex items-center gap-1.5 text-sm text-foreground">
+                  <User className="h-4 w-4" />
+                  <span className="font-medium">{user.email?.split("@")[0]}</span>
+                  {isPremium && <PremiumBadge />}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-lg p-2 hover:bg-secondary transition-colors"
+                  title="Sign out"
+                >
+                  <LogOut className="h-5 w-5 text-muted-foreground" />
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors sm:text-sm sm:px-4"
+              >
+                <LogIn className="inline h-4 w-4 mr-1" />
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -83,6 +107,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 px-3 mb-6">
               <img src={logo} alt="Logo" className="h-8 w-8 object-contain" />
               <span className="font-heading font-bold text-sm text-foreground">Fur Babies L&F</span>
+              {isPremium && <PremiumBadge />}
             </div>
             <nav className="space-y-1">
               {navItems.map((item) => {
@@ -127,6 +152,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </Link>
                   );
                 })}
+                {!user && (
+                  <Link to="/login" onClick={() => setSidebarOpen(false)} className="nav-link">
+                    <LogIn className="h-5 w-5 flex-shrink-0" />
+                    <span>Sign In</span>
+                  </Link>
+                )}
               </nav>
             </aside>
           </>
