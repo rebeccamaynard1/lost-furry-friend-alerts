@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import HomePage from "@/pages/HomePage";
 import ReportLostPage from "@/pages/ReportLostPage";
@@ -18,6 +19,9 @@ import SponsorsPage from "@/pages/SponsorsPage";
 import DonatePage from "@/pages/DonatePage";
 import PremiumPage from "@/pages/PremiumPage";
 import AdminPage from "@/pages/AdminPage";
+import LoginPage from "@/pages/LoginPage";
+import SignupPage from "@/pages/SignupPage";
+import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,26 +32,32 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/report-lost" element={<ReportLostPage />} />
-            <Route path="/report-found" element={<ReportFoundPage />} />
-            <Route path="/map" element={<MapPage />} />
-            <Route path="/sightings" element={<SightingsPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/my-pets" element={<MyPetsPage />} />
-            <Route path="/my-reports" element={<MyPetsPage />} />
-            <Route path="/shelters" element={<SheltersPage />} />
-            <Route path="/volunteers" element={<VolunteersPage />} />
-            <Route path="/rural-partners" element={<RuralPartnersPage />} />
-            <Route path="/sponsors" element={<SponsorsPage />} />
-            <Route path="/donate" element={<DonatePage />} />
-            <Route path="/premium" element={<PremiumPage />} />
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppLayout>
+        <AuthProvider>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/report-lost" element={<ReportLostPage />} />
+              <Route path="/report-found" element={<ReportFoundPage />} />
+              <Route path="/map" element={<MapPage />} />
+              <Route path="/sightings" element={<SightingsPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/my-pets" element={<MyPetsPage />} />
+              <Route path="/my-reports" element={<MyPetsPage />} />
+              <Route path="/shelters" element={<SheltersPage />} />
+              <Route path="/volunteers" element={<VolunteersPage />} />
+              <Route path="/rural-partners" element={<RuralPartnersPage />} />
+              <Route path="/sponsors" element={<SponsorsPage />} />
+              <Route path="/donate" element={<DonatePage />} />
+              <Route path="/premium" element={<PremiumPage />} />
+              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/payment-success" element={<PaymentSuccessPage />} />
+              <Route path="/donation-success" element={<PaymentSuccessPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppLayout>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
