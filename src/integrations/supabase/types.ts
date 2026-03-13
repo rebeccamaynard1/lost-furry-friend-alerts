@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      donations: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          message: string | null
+          status: string
+          stripe_session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          message?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          message?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       found_pets: {
         Row: {
           breed: string | null
@@ -77,6 +110,8 @@ export type Database = {
       lost_pets: {
         Row: {
           age: string | null
+          boosted: boolean | null
+          boosted_at: string | null
           breed: string | null
           color: string
           contact_email: string | null
@@ -101,6 +136,8 @@ export type Database = {
         }
         Insert: {
           age?: string | null
+          boosted?: boolean | null
+          boosted_at?: string | null
           breed?: string | null
           color: string
           contact_email?: string | null
@@ -125,6 +162,8 @@ export type Database = {
         }
         Update: {
           age?: string | null
+          boosted?: boolean | null
+          boosted_at?: string | null
           breed?: string | null
           color?: string
           contact_email?: string | null
@@ -176,8 +215,48 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          pet_id: string | null
+          photo_url: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          pet_id?: string | null
+          photo_url?: string | null
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          pet_id?: string | null
+          photo_url?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          alert_radius_miles: number | null
           created_at: string
           device_token: string | null
           email: string | null
@@ -186,11 +265,13 @@ export type Database = {
           name: string
           phone: string | null
           profile_photo: string | null
+          state: string | null
           subscription_status: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          alert_radius_miles?: number | null
           created_at?: string
           device_token?: string | null
           email?: string | null
@@ -199,11 +280,13 @@ export type Database = {
           name?: string
           phone?: string | null
           profile_photo?: string | null
+          state?: string | null
           subscription_status?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          alert_radius_miles?: number | null
           created_at?: string
           device_token?: string | null
           email?: string | null
@@ -212,6 +295,7 @@ export type Database = {
           name?: string
           phone?: string | null
           profile_photo?: string | null
+          state?: string | null
           subscription_status?: string | null
           updated_at?: string
           user_id?: string
