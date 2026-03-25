@@ -73,7 +73,7 @@ export default function PremiumPage() {
       <Card className="border-accent/30 shadow-lg">
         <CardContent className="p-8">
           <div className="mb-6">
-            <span className="text-4xl font-extrabold font-heading text-foreground">$4.99</span>
+            <span className="text-4xl font-extrabold font-heading text-foreground">$15</span>
             <span className="text-muted-foreground">/month</span>
           </div>
           <ul className="space-y-3 text-left mb-8">
