@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PawPrint, Plus, AlertTriangle, CheckCircle2, Heart, Loader2, Share2 } from "lucide-react";
+import { PawPrint, Plus, AlertTriangle, CheckCircle2, Heart, Loader2, Share2, FileDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
