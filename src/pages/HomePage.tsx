@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import {
   Heart, Crown, ArrowRight, Search
 } from "lucide-react";
 import logo from "@/assets/littlefoot-logo-1.png";
+import { supabase } from "@/integrations/supabase/client";
 
 const quickActions = [
   {
@@ -42,13 +44,31 @@ const quickActions = [
   },
 ];
 
-const stats = [
-  { label: "Pets Reunited", value: "2,847", icon: Heart },
-  { label: "Active Reports", value: "156", icon: Search },
-  { label: "Volunteers", value: "1,203", icon: PawPrint },
-];
-
 export default function HomePage() {
+  const [stats, setStats] = useState({ reunited: 0, active: 0, volunteers: 0 });
+
+  useEffect(() => {
+    async function fetchStats() {
+      const [reunited, active, vols] = await Promise.all([
+        supabase.from("lost_pets").select("id", { count: "exact", head: true }).eq("status", "reunited"),
+        supabase.from("lost_pets").select("id", { count: "exact", head: true }).eq("status", "lost"),
+        supabase.from("volunteers").select("id", { count: "exact", head: true }),
+      ]);
+      setStats({
+        reunited: reunited.count || 0,
+        active: active.count || 0,
+        volunteers: vols.count || 0,
+      });
+    }
+    fetchStats();
+  }, []);
+
+  const statItems = [
+    { label: "Pets Reunited", value: stats.reunited, icon: Heart },
+    { label: "Active Reports", value: stats.active, icon: Search },
+    { label: "Volunteers", value: stats.volunteers, icon: PawPrint },
+  ];
+
   return (
     <div>
       {/* Hero Section */}
@@ -70,14 +90,12 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild variant="hero" size="lg" className="w-full sm:w-auto px-8 py-6 text-lg rounded-xl">
               <Link to="/report-lost">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                Report Lost Pet
+                <AlertTriangle className="h-5 w-5 mr-2" />Report Lost Pet
               </Link>
             </Button>
             <Button asChild variant="hero-outline" size="lg" className="w-full sm:w-auto px-8 py-6 text-lg rounded-xl">
               <Link to="/report-found">
-                <CheckCircle2 className="h-5 w-5 mr-2" />
-                Report Found Pet
+                <CheckCircle2 className="h-5 w-5 mr-2" />Report Found Pet
               </Link>
             </Button>
           </div>
@@ -88,14 +106,12 @@ export default function HomePage() {
       <section className="border-b border-border bg-card py-8">
         <div className="page-container">
           <div className="grid grid-cols-3 gap-4 text-center">
-            {stats.map((stat) => {
+            {statItems.map((stat) => {
               const Icon = stat.icon;
               return (
                 <div key={stat.label}>
                   <Icon className="mx-auto mb-1 h-5 w-5 text-primary" />
-                  <p className="text-2xl sm:text-3xl font-bold font-heading text-foreground">
-                    {stat.value}
-                  </p>
+                  <p className="text-2xl sm:text-3xl font-bold font-heading text-foreground">{stat.value}</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">{stat.label}</p>
                 </div>
               );
@@ -107,9 +123,7 @@ export default function HomePage() {
       {/* Quick Actions */}
       <section className="py-10">
         <div className="page-container">
-          <h2 className="text-2xl font-bold font-heading text-foreground mb-6 text-center">
-            How Can We Help?
-          </h2>
+          <h2 className="text-2xl font-bold font-heading text-foreground mb-6 text-center">How Can We Help?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {quickActions.map((action) => {
               const Icon = action.icon;
@@ -120,9 +134,7 @@ export default function HomePage() {
                       <div className={`mb-4 inline-flex rounded-xl p-3 ${action.color}`}>
                         <Icon className={`h-6 w-6 ${action.iconColor}`} />
                       </div>
-                      <h3 className="text-lg font-bold font-heading text-card-foreground mb-1">
-                        {action.title}
-                      </h3>
+                      <h3 className="text-lg font-bold font-heading text-card-foreground mb-1">{action.title}</h3>
                       <p className="text-sm text-muted-foreground">{action.description}</p>
                       <div className="mt-3 flex items-center text-sm font-semibold text-primary">
                         Get Started <ArrowRight className="ml-1 h-4 w-4" />
@@ -140,18 +152,13 @@ export default function HomePage() {
       <section className="py-10 bg-gradient-to-r from-primary/5 to-accent/5">
         <div className="page-container text-center">
           <Crown className="mx-auto mb-3 h-10 w-10 text-accent" />
-          <h2 className="text-2xl font-bold font-heading text-foreground mb-2">
-            Upgrade to Premium
-          </h2>
+          <h2 className="text-2xl font-bold font-heading text-foreground mb-2">Upgrade to Premium</h2>
           <p className="mx-auto max-w-lg text-muted-foreground mb-6">
             Get instant alerts, state-wide notifications, priority listing,
             and help us keep this service running for everyone.
           </p>
           <Button asChild variant="hero" size="lg" className="rounded-xl">
-            <Link to="/premium">
-              <Crown className="h-5 w-5 mr-2" />
-              Learn More
-            </Link>
+            <Link to="/premium"><Crown className="h-5 w-5 mr-2" />Learn More</Link>
           </Button>
         </div>
       </section>
