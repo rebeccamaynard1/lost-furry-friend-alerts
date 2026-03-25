@@ -22,6 +22,8 @@ import AdminPage from "@/pages/AdminPage";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
+import HelpPage from "@/pages/HelpPage";
+import NotificationSettingsPage from "@/pages/NotificationSettingsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +56,8 @@ const App = () => (
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/payment-success" element={<PaymentSuccessPage />} />
               <Route path="/donation-success" element={<PaymentSuccessPage />} />
+              <Route path="/help" element={<HelpPage />} />
+              <Route path="/notification-settings" element={<NotificationSettingsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>
