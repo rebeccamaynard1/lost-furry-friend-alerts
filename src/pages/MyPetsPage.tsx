@@ -34,6 +34,17 @@ export default function MyPetsPage() {
     else { toast.success("Pet marked as reunited! 🎉"); setLostPets((prev) => prev.map((p) => (p.id === petId ? { ...p, status: "reunited" } : p))); }
   };
 
+  const generateFlyer = async (pet: Pet) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-flyer", {
+        body: { pet_name: pet.pet_name, species: pet.species, breed: pet.breed, color: "", description: pet.description, last_seen_address: pet.last_seen_address, contact_name: pet.contact_name, photo_url: pet.photos?.[0] || null, pet_id: pet.id },
+      });
+      if (error || !data?.html) { toast.error("Failed to generate flyer"); return; }
+      const w = window.open("", "_blank");
+      if (w) { w.document.write(data.html); w.document.close(); }
+    } catch { toast.error("Failed to generate flyer"); }
+  };
+
   const sharePet = (pet: Pet) => {
     const text = `🚨 LOST PET: ${pet.pet_name} (${pet.species}) — ${pet.last_seen_address || "Unknown location"}. Please help! #FurBabiesLostAndFound`;
     navigator.share?.({ text, url: window.location.href }).catch(() => { navigator.clipboard.writeText(text); toast.success("Copied to clipboard!"); });
