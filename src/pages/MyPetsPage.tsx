@@ -101,6 +101,11 @@ export default function MyPetsPage() {
                       <Button size="sm" variant="ghost" className="text-xs" onClick={() => sharePet(pet)}>
                         <Share2 className="h-3 w-3" />
                       </Button>
+                      {pet.status === "lost" && (
+                        <Button size="sm" variant="ghost" className="text-xs" onClick={() => generateFlyer(pet)}>
+                          <FileDown className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
