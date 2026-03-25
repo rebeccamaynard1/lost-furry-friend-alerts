@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      alabama_partners: {
+        Row: {
+          county: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          type: string
+          website: string | null
+        }
+        Insert: {
+          county?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          type?: string
+          website?: string | null
+        }
+        Update: {
+          county?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          type?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       donations: {
         Row: {
           amount: number

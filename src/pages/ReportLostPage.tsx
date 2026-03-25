@@ -60,6 +60,22 @@ export default function ReportLostPage() {
       });
     } catch {}
 
+    // Auto-notify Alabama partners if pet lost in Alabama
+    const addr = (formData.lastSeenAddress || "").toLowerCase();
+    if (addr.includes("alabama") || addr.includes(", al") || addr.match(/\bAL\s*\d{5}/i)) {
+      try {
+        await supabase.functions.invoke("notify-alabama-partners", {
+          body: {
+            pet_id: data.id, pet_name: formData.petName, species: formData.species,
+            breed: formData.breed, color: formData.color, description: formData.description,
+            last_seen_address: formData.lastSeenAddress, contact_name: formData.contactName,
+            contact_phone: formData.contactPhone, contact_email: formData.contactEmail,
+            photo_url: photos[0] || null,
+          },
+        });
+      } catch {}
+    }
+
     toast.success("Lost pet report submitted! Nearby users will be alerted.");
     setLoading(false);
     navigate("/my-pets");
