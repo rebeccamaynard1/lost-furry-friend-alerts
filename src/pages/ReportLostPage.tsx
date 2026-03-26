@@ -92,16 +92,22 @@ export default function ReportLostPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <a href="https://buy.stripe.com/4gMdR89r58Ee3wY2bv0Ny01" target="_blank" rel="noopener noreferrer">
-          <Button type="button" variant="lost" size="lg" className="w-full rounded-xl py-6 text-lg font-bold">
-            🔔 $10 Lost Pet Alert
-          </Button>
-        </a>
-        <a href="https://buy.stripe.com/4gMfZgbzd2fQ2sUeYh0Ny02" target="_blank" rel="noopener noreferrer">
-          <Button type="button" size="lg" className="w-full rounded-xl py-6 text-lg font-bold bg-accent text-accent-foreground hover:bg-accent/90 shadow-md">
-            🚀 $20 Boosted Alert
-          </Button>
-        </a>
+        <div className="text-center">
+          <a href="https://buy.stripe.com/4gMdR89r58Ee3wY2bv0Ny01" target="_blank" rel="noopener noreferrer">
+            <Button type="button" variant="lost" size="lg" className="w-full rounded-xl py-6 text-lg font-bold">
+              🔔 $10 Lost Pet Alert
+            </Button>
+          </a>
+          <p className="text-xs text-muted-foreground mt-2">Standard alert sent to nearby users.</p>
+        </div>
+        <div className="text-center">
+          <a href="https://buy.stripe.com/4gMfZgbzd2fQ2sUeYh0Ny02" target="_blank" rel="noopener noreferrer">
+            <Button type="button" size="lg" className="w-full rounded-xl py-6 text-lg font-bold bg-accent text-accent-foreground hover:bg-accent/90 shadow-md">
+              🚀 $20 Boosted Alert
+            </Button>
+          </a>
+          <p className="text-xs text-muted-foreground mt-2">Extra notifications for faster visibility.</p>
+        </div>
       </div>
 
       {!user && (
