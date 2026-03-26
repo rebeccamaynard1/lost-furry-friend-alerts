@@ -63,10 +63,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <Link to="/" className="flex items-center gap-2">
-              <img src={logo} alt="Fur Babies Lost & Found" className="h-10 w-10 object-contain" />
+              <img src={logo} alt="Lost Furry Friend Alerts" className="h-10 w-10 object-contain" />
               <div className="hidden sm:block">
-                <h1 className="text-lg font-bold font-heading leading-tight text-foreground">Fur Babies</h1>
-                <p className="text-xs font-medium text-primary leading-none">Lost & Found USA</p>
+                <h1 className="text-lg font-bold font-heading leading-tight text-foreground">Lost Furry Friend</h1>
+                <p className="text-xs font-medium text-primary leading-none">Alerts</p>
               </div>
             </Link>
           </div>
