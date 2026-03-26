@@ -22,7 +22,7 @@ const guides = [
     icon: PawPrint,
     color: "text-lost",
     items: [
-      "Report immediately on Fur Babies Lost & Found",
+      "Report immediately on Lost Furry Friend Alerts",
       "Search your neighborhood — call their name",
       "Leave familiar items outside (bed, toys, worn clothes)",
       "Contact local shelters and animal control",
@@ -37,7 +37,7 @@ const guides = [
     icon: Eye,
     color: "text-found",
     items: [
-      "Report found pet on Fur Babies Lost & Found",
+      "Report found pet on Lost Furry Friend Alerts",
       "Check for a collar with ID tags",
       "Take the pet to a vet or shelter to scan for a microchip",
       "Post clear photos on our app and social media",

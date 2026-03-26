@@ -9,11 +9,11 @@ export default function PaymentSuccessPage() {
     <div className="page-container flex items-center justify-center min-h-[60vh]">
       <Card className="w-full max-w-md text-center">
         <CardContent className="p-8">
-          <img src={logo} alt="Fur Babies" className="mx-auto h-16 w-16 object-contain mb-4" />
+          <img src={logo} alt="Lost Furry Friend Alerts" className="mx-auto h-16 w-16 object-contain mb-4" />
           <CheckCircle2 className="mx-auto h-12 w-12 text-found mb-4" />
           <h1 className="text-2xl font-bold font-heading text-foreground mb-2">Thank You!</h1>
           <p className="text-muted-foreground mb-6">
-            Your payment was successful. Thank you for supporting Fur Babies Lost & Found USA!
+            Your payment was successful. Thank you for supporting Lost Furry Friend Alerts!
           </p>
           <div className="flex gap-3 justify-center">
             <Button asChild variant="hero" className="rounded-xl">

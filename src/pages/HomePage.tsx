@@ -47,9 +47,9 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-secondary to-primary/10 py-12 sm:py-20">
         <div className="page-container text-center">
-          <img src={logo} alt="Fur Babies Lost & Found USA" className="mx-auto mb-6 h-24 w-24 sm:h-32 sm:w-32 object-contain animate-pulse-soft" />
+          <img src={logo} alt="Lost Furry Friend Alerts" className="mx-auto mb-6 h-24 w-24 sm:h-32 sm:w-32 object-contain animate-pulse-soft" />
           <h1 className="text-3xl sm:text-5xl font-extrabold font-heading text-foreground mb-4 leading-tight">
-            Fur Babies<br /><span className="text-primary">Lost & Found USA</span>
+            Lost Furry Friend<br /><span className="text-primary">Alerts</span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground mb-8">
             A nationwide pet recovery network helping families reunite with their beloved pets.

@@ -1,4 +1,4 @@
-Fur Babies Lost & Found USA - pet recovery app. Little Foot photo is the logo.
+Lost Furry Friend Alerts (formerly "Fur Babies Lost & Found USA") - pet recovery app. Little Foot photo is the logo.
 
 ## Design System
 - Fonts: Nunito (headings), Quicksand (body)
