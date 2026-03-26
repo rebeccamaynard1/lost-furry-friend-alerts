@@ -43,7 +43,7 @@ serve(async (req) => {
       line_items: [{
         price_data: {
           currency: "usd",
-          product_data: { name: "Donation to Fur Babies Lost & Found USA" },
+          product_data: { name: "Donation to Lost Furry Friend Alerts" },
           unit_amount: amount,
         },
         quantity: 1,

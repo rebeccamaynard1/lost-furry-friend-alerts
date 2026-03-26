@@ -13,7 +13,7 @@ export default function PaymentSuccessPage() {
           <CheckCircle2 className="mx-auto h-12 w-12 text-found mb-4" />
           <h1 className="text-2xl font-bold font-heading text-foreground mb-2">Thank You!</h1>
           <p className="text-muted-foreground mb-6">
-            Your payment was successful. Thank you for supporting Fur Babies Lost & Found USA!
+            Your payment was successful. Thank you for supporting Lost Furry Friend Alerts!
           </p>
           <div className="flex gap-3 justify-center">
             <Button asChild variant="hero" className="rounded-xl">

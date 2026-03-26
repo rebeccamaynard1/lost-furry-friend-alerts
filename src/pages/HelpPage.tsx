@@ -37,7 +37,7 @@ const guides = [
     icon: Eye,
     color: "text-found",
     items: [
-      "Report found pet on Fur Babies Lost & Found",
+      "Report found pet on Lost Furry Friend Alerts",
       "Check for a collar with ID tags",
       "Take the pet to a vet or shelter to scan for a microchip",
       "Post clear photos on our app and social media",

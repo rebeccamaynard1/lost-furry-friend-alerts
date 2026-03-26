@@ -32,7 +32,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardContent className="p-8">
           <div className="text-center mb-6">
-            <img src={logo} alt="Fur Babies" className="mx-auto h-20 w-20 object-contain mb-3" />
+            <img src={logo} alt="Lost Furry Friend Alerts" className="mx-auto h-20 w-20 object-contain mb-3" />
             <h1 className="text-2xl font-bold font-heading text-foreground">Welcome Back</h1>
             <p className="text-sm text-muted-foreground">Sign in to your account</p>
           </div>

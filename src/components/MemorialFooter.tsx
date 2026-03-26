@@ -9,7 +9,7 @@ export default function MemorialFooter() {
           In Loving Memory of Little Foot 🐾
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          © {new Date().getFullYear()} Fur Babies Lost & Found USA. All rights reserved.
+          © {new Date().getFullYear()} Lost Furry Friend Alerts. All rights reserved.
         </p>
       </div>
     </footer>

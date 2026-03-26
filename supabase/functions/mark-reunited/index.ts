@@ -63,7 +63,7 @@ serve(async (req) => {
     notifications.push({
       user_id: pet.user_id,
       title: `🎉 ${pet.pet_name} Marked as Reunited!`,
-      message: `We're so happy ${pet.pet_name} is back home! Thank you for using Fur Babies Lost & Found.`,
+      message: `We're so happy ${pet.pet_name} is back home! Thank you for using Lost Furry Friend Alerts.`,
       type: "reunion",
       pet_id,
     });

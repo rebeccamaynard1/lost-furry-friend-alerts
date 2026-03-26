@@ -101,7 +101,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex-1 overflow-y-auto px-3 py-4">
             <div className="flex items-center gap-2 px-3 mb-6">
               <img src={logo} alt="Logo" className="h-8 w-8 object-contain" />
-              <span className="font-heading font-bold text-sm text-foreground">Fur Babies L&F</span>
+              <span className="font-heading font-bold text-sm text-foreground">Lost Furry Friend Alerts</span>
               {isPremium && <PremiumBadge />}
             </div>
             <nav className="space-y-1">

@@ -70,7 +70,7 @@ serve(async (req) => {
     <img src="${qrUrl}" alt="QR Code" width="100" height="100">
     <p>Scan to view full report online</p>
   </div>
-  <div class="footer">Fur Babies Lost & Found USA — furbabieslostandfound.com</div>
+  <div class="footer">Lost Furry Friend Alerts — lostfurryfriend.com</div>
 </div>
 </body>
 </html>`;

@@ -42,9 +42,9 @@ export default function SignupPage() {
       <Card className="w-full max-w-md">
         <CardContent className="p-8">
           <div className="text-center mb-6">
-            <img src={logo} alt="Fur Babies" className="mx-auto h-20 w-20 object-contain mb-3" />
+            <img src={logo} alt="Lost Furry Friend Alerts" className="mx-auto h-20 w-20 object-contain mb-3" />
             <h1 className="text-2xl font-bold font-heading text-foreground">Create Account</h1>
-            <p className="text-sm text-muted-foreground">Join Fur Babies Lost & Found USA</p>
+            <p className="text-sm text-muted-foreground">Join Lost Furry Friend Alerts</p>
           </div>
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-2">

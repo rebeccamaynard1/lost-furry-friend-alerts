@@ -54,7 +54,7 @@ export default function DonatePage() {
         Donate
       </h1>
       <p className="text-muted-foreground mb-8">
-        Your donation helps keep Fur Babies Lost & Found free for every family.
+        Your donation helps keep Lost Furry Friend Alerts free for every family.
         100% goes toward alerts, server costs, and community support.
       </p>
 
