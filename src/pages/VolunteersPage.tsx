@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, MapPin, Clock, Plus, Loader2, Wrench } from "lucide-react";
+import { Users, MapPin, Clock, Plus, Loader2, Wrench, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ type Volunteer = {
   name: string;
   county: string | null;
   phone: string | null;
+  email: string | null;
   skills: string | null;
   availability: string | null;
 };
@@ -23,7 +24,7 @@ export default function VolunteersPage() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", county: "", phone: "", skills: "", availability: "" });
+  const [form, setForm] = useState({ name: "", county: "", phone: "", email: "", skills: "", availability: "" });
 
   useEffect(() => {
     supabase.from("volunteers").select("*").order("created_at", { ascending: false }).then(({ data }) => {
@@ -41,6 +42,7 @@ export default function VolunteersPage() {
       name: form.name,
       county: form.county || null,
       phone: form.phone || null,
+      email: form.email || null,
       skills: form.skills || null,
       availability: form.availability || null,
     });
@@ -48,7 +50,7 @@ export default function VolunteersPage() {
     else {
       toast.success("You're now a volunteer! 🎉");
       setOpen(false);
-      setForm({ name: "", county: "", phone: "", skills: "", availability: "" });
+      setForm({ name: "", county: "", phone: "", email: "", skills: "", availability: "" });
       supabase.from("volunteers").select("*").order("created_at", { ascending: false }).then(({ data }) => setVolunteers(data || []));
     }
     setSubmitting(false);
@@ -68,6 +70,7 @@ export default function VolunteersPage() {
               <Input placeholder="Your Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               <Input placeholder="County (e.g. Travis County, TX)" value={form.county} onChange={(e) => setForm({ ...form, county: e.target.value })} />
               <Input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <Input placeholder="Skills (e.g. Drone Pilot, Trapping)" value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} />
               <Input placeholder="Availability (e.g. Weekends, Evenings)" value={form.availability} onChange={(e) => setForm({ ...form, availability: e.target.value })} />
               <Button onClick={handleRegister} disabled={submitting} className="w-full">
@@ -98,6 +101,7 @@ export default function VolunteersPage() {
                 </div>
                 <div className="space-y-1 text-sm text-muted-foreground">
                   {v.county && <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />{v.county}</p>}
+                  {v.email && <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />{v.email}</p>}
                   {v.availability && <p className="flex items-center gap-2"><Clock className="h-3.5 w-3.5" />{v.availability}</p>}
                   {v.skills && <p className="flex items-center gap-2"><Wrench className="h-3.5 w-3.5" />{v.skills}</p>}
                 </div>

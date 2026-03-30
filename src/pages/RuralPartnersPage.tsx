@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TreePine, MapPin, Camera, Plus, Loader2 } from "lucide-react";
+import { TreePine, MapPin, Camera, Plus, Loader2, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ type Partner = {
   name: string;
   county: string | null;
   hunting_area: string | null;
+  email: string | null;
   trail_cam_uploads: string[] | null;
 };
 
@@ -22,7 +23,7 @@ export default function RuralPartnersPage() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", county: "", hunting_area: "" });
+  const [form, setForm] = useState({ name: "", county: "", hunting_area: "", email: "" });
 
   useEffect(() => {
     supabase.from("rural_partners").select("*").order("created_at", { ascending: false }).then(({ data }) => {
@@ -40,12 +41,13 @@ export default function RuralPartnersPage() {
       name: form.name,
       county: form.county || null,
       hunting_area: form.hunting_area || null,
+      email: form.email || null,
     });
     if (error) toast.error(error.message);
     else {
       toast.success("Registered as rural partner! 🌲");
       setOpen(false);
-      setForm({ name: "", county: "", hunting_area: "" });
+      setForm({ name: "", county: "", hunting_area: "", email: "" });
       supabase.from("rural_partners").select("*").order("created_at", { ascending: false }).then(({ data }) => setPartners(data || []));
     }
     setSubmitting(false);
@@ -91,6 +93,7 @@ export default function RuralPartnersPage() {
                 <div className="space-y-1 text-sm text-muted-foreground">
                   {p.county && <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />{p.county}</p>}
                   {p.hunting_area && <p className="flex items-center gap-2"><TreePine className="h-3.5 w-3.5" />{p.hunting_area}</p>}
+                  {p.email && <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />{p.email}</p>}
                   <p className="flex items-center gap-2"><Camera className="h-3.5 w-3.5" />{p.trail_cam_uploads?.length || 0} trail cam uploads</p>
                 </div>
               </CardContent>
