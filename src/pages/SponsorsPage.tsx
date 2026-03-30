@@ -39,7 +39,7 @@ export default function SponsorsPage() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ business_name: "", website: "", tier: "bronze" });
+  const [form, setForm] = useState({ business_name: "", website: "", tier: "bronze", email: "" });
 
   useEffect(() => {
     supabase.from("sponsors").select("id, business_name, logo, website, tier").eq("approved", true).order("created_at").then(({ data }) => {
