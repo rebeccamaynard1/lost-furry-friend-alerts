@@ -16,6 +16,7 @@ type Sponsor = {
   logo: string | null;
   website: string | null;
   tier: string | null;
+  email: string | null;
 };
 
 const tierColor: Record<string, string> = {
@@ -38,10 +39,10 @@ export default function SponsorsPage() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ business_name: "", website: "", tier: "bronze" });
+  const [form, setForm] = useState({ business_name: "", website: "", tier: "bronze", email: "" });
 
   useEffect(() => {
-    supabase.from("sponsors").select("id, business_name, logo, website, tier").eq("approved", true).order("created_at").then(({ data }) => {
+    supabase.from("sponsors").select("id, business_name, logo, website, tier, email").eq("approved", true).order("created_at").then(({ data }) => {
       setSponsors(data || []);
       setLoading(false);
     });
@@ -55,13 +56,14 @@ export default function SponsorsPage() {
       user_id: user.id,
       business_name: form.business_name,
       website: form.website || null,
+      email: form.email || null,
       tier: form.tier,
     });
     if (error) toast.error(error.message);
     else {
       toast.success("Sponsor application submitted! Pending admin approval.");
       setOpen(false);
-      setForm({ business_name: "", website: "", tier: "bronze" });
+      setForm({ business_name: "", website: "", tier: "bronze", email: "" });
     }
     setSubmitting(false);
   };
@@ -79,6 +81,7 @@ export default function SponsorsPage() {
             <div className="space-y-3 mt-2">
               <Input placeholder="Business Name *" value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
               <Input placeholder="Website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
+              <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <Select value={form.tier} onValueChange={(v) => setForm({ ...form, tier: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
