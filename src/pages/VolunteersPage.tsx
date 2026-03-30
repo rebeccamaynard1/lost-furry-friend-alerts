@@ -70,6 +70,7 @@ export default function VolunteersPage() {
               <Input placeholder="Your Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               <Input placeholder="County (e.g. Travis County, TX)" value={form.county} onChange={(e) => setForm({ ...form, county: e.target.value })} />
               <Input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <Input placeholder="Skills (e.g. Drone Pilot, Trapping)" value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} />
               <Input placeholder="Availability (e.g. Weekends, Evenings)" value={form.availability} onChange={(e) => setForm({ ...form, availability: e.target.value })} />
               <Button onClick={handleRegister} disabled={submitting} className="w-full">
