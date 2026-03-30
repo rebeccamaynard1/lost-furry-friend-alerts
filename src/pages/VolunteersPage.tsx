@@ -50,7 +50,7 @@ export default function VolunteersPage() {
     else {
       toast.success("You're now a volunteer! 🎉");
       setOpen(false);
-      setForm({ name: "", county: "", phone: "", skills: "", availability: "" });
+      setForm({ name: "", county: "", phone: "", email: "", skills: "", availability: "" });
       supabase.from("volunteers").select("*").order("created_at", { ascending: false }).then(({ data }) => setVolunteers(data || []));
     }
     setSubmitting(false);
