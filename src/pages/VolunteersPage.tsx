@@ -101,6 +101,7 @@ export default function VolunteersPage() {
                 </div>
                 <div className="space-y-1 text-sm text-muted-foreground">
                   {v.county && <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />{v.county}</p>}
+                  {v.email && <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />{v.email}</p>}
                   {v.availability && <p className="flex items-center gap-2"><Clock className="h-3.5 w-3.5" />{v.availability}</p>}
                   {v.skills && <p className="flex items-center gap-2"><Wrench className="h-3.5 w-3.5" />{v.skills}</p>}
                 </div>

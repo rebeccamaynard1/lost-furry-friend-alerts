@@ -93,6 +93,7 @@ export default function RuralPartnersPage() {
                 <div className="space-y-1 text-sm text-muted-foreground">
                   {p.county && <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />{p.county}</p>}
                   {p.hunting_area && <p className="flex items-center gap-2"><TreePine className="h-3.5 w-3.5" />{p.hunting_area}</p>}
+                  {p.email && <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />{p.email}</p>}
                   <p className="flex items-center gap-2"><Camera className="h-3.5 w-3.5" />{p.trail_cam_uploads?.length || 0} trail cam uploads</p>
                 </div>
               </CardContent>
