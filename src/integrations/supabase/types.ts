@@ -339,6 +339,7 @@ export type Database = {
         Row: {
           county: string | null
           created_at: string
+          email: string | null
           hunting_area: string | null
           id: string
           name: string
@@ -348,6 +349,7 @@ export type Database = {
         Insert: {
           county?: string | null
           created_at?: string
+          email?: string | null
           hunting_area?: string | null
           id?: string
           name: string
@@ -357,6 +359,7 @@ export type Database = {
         Update: {
           county?: string | null
           created_at?: string
+          email?: string | null
           hunting_area?: string | null
           id?: string
           name?: string
@@ -502,6 +505,7 @@ export type Database = {
           availability: string | null
           county: string | null
           created_at: string
+          email: string | null
           id: string
           name: string
           phone: string | null
@@ -512,6 +516,7 @@ export type Database = {
           availability?: string | null
           county?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           name: string
           phone?: string | null
@@ -522,6 +527,7 @@ export type Database = {
           availability?: string | null
           county?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           name?: string
           phone?: string | null
