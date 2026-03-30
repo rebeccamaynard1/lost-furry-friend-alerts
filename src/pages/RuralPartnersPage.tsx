@@ -41,6 +41,7 @@ export default function RuralPartnersPage() {
       name: form.name,
       county: form.county || null,
       hunting_area: form.hunting_area || null,
+      email: form.email || null,
     });
     if (error) toast.error(error.message);
     else {
