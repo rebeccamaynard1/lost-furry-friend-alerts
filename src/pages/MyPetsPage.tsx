@@ -46,7 +46,7 @@ export default function MyPetsPage() {
   };
 
   const sharePet = (pet: Pet) => {
-    const text = `🚨 LOST PET: ${pet.pet_name} (${pet.species}) — ${pet.last_seen_address || "Unknown location"}. Please help! #FurBabiesLostAndFound`;
+    const text = `🚨 LOST PET: ${pet.pet_name} (${pet.species}) — ${pet.last_seen_address || "Unknown location"}. Please help! #LostFurryFriendAlerts`;
     navigator.share?.({ text, url: window.location.href }).catch(() => { navigator.clipboard.writeText(text); toast.success("Copied to clipboard!"); });
   };
 
