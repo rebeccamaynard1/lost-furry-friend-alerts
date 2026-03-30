@@ -47,7 +47,7 @@ export default function RuralPartnersPage() {
     else {
       toast.success("Registered as rural partner! 🌲");
       setOpen(false);
-      setForm({ name: "", county: "", hunting_area: "" });
+      setForm({ name: "", county: "", hunting_area: "", email: "" });
       supabase.from("rural_partners").select("*").order("created_at", { ascending: false }).then(({ data }) => setPartners(data || []));
     }
     setSubmitting(false);
