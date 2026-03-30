@@ -23,7 +23,7 @@ export default function RuralPartnersPage() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", county: "", hunting_area: "" });
+  const [form, setForm] = useState({ name: "", county: "", hunting_area: "", email: "" });
 
   useEffect(() => {
     supabase.from("rural_partners").select("*").order("created_at", { ascending: false }).then(({ data }) => {
