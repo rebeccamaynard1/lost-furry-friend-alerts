@@ -16,6 +16,7 @@ type Sponsor = {
   logo: string | null;
   website: string | null;
   tier: string | null;
+  email: string | null;
 };
 
 const tierColor: Record<string, string> = {
