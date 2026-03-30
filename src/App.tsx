@@ -25,6 +25,7 @@ import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import HelpPage from "@/pages/HelpPage";
 import NotificationSettingsPage from "@/pages/NotificationSettingsPage";
 import AlabamaPartnersPage from "@/pages/AlabamaPartnersPage";
+import ProfileSettingsPage from "@/pages/ProfileSettingsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
