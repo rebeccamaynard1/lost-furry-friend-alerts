@@ -42,6 +42,7 @@ export default function VolunteersPage() {
       name: form.name,
       county: form.county || null,
       phone: form.phone || null,
+      email: form.email || null,
       skills: form.skills || null,
       availability: form.availability || null,
     });
