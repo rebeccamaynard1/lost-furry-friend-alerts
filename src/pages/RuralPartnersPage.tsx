@@ -13,6 +13,7 @@ type Partner = {
   name: string;
   county: string | null;
   hunting_area: string | null;
+  email: string | null;
   trail_cam_uploads: string[] | null;
 };
 
