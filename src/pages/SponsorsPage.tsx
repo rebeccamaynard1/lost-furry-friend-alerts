@@ -63,7 +63,7 @@ export default function SponsorsPage() {
     else {
       toast.success("Sponsor application submitted! Pending admin approval.");
       setOpen(false);
-      setForm({ business_name: "", website: "", tier: "bronze" });
+      setForm({ business_name: "", website: "", tier: "bronze", email: "" });
     }
     setSubmitting(false);
   };
