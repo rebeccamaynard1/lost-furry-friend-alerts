@@ -1,42 +1,109 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Megaphone, Globe, Crown } from "lucide-react";
+import { Megaphone, Globe, Crown, Loader2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
-const mockSponsors = [
-  { id: 1, name: "PetSafe Foods", tier: "Platinum", website: "petsafe.com", approved: true },
-  { id: 2, name: "Pawsitive Vet Clinic", tier: "Gold", website: "pawsitivevet.com", approved: true },
-  { id: 3, name: "Happy Tails Supply", tier: "Silver", website: "happytails.com", approved: true },
-  { id: 4, name: "Local Pet Shop", tier: "Bronze", website: "localpets.com", approved: true },
-];
+type Sponsor = {
+  id: string;
+  business_name: string;
+  logo: string | null;
+  website: string | null;
+  tier: string | null;
+};
 
 const tierColor: Record<string, string> = {
-  Platinum: "bg-primary text-primary-foreground",
-  Gold: "bg-accent text-accent-foreground",
-  Silver: "bg-muted text-foreground",
-  Bronze: "bg-sighting/20 text-sighting",
+  platinum: "bg-primary text-primary-foreground",
+  gold: "bg-accent text-accent-foreground",
+  silver: "bg-muted text-foreground",
+  bronze: "bg-sighting/20 text-sighting",
 };
 
 const tierBenefits: Record<string, string[]> = {
-  Bronze: ["Logo on sponsors page", "Link to your website"],
-  Silver: ["Everything in Bronze", "Social media shoutout", "Logo on monthly newsletter"],
-  Gold: ["Everything in Silver", "Featured sponsor badge", "Logo on homepage"],
-  Platinum: ["Everything in Gold", "Top placement everywhere", "Custom co-branded campaign", "Direct shelter partnership"],
+  bronze: ["Logo on sponsors page", "Link to your website"],
+  silver: ["Everything in Bronze", "Social media shoutout", "Logo on monthly newsletter"],
+  gold: ["Everything in Silver", "Featured sponsor badge", "Logo on homepage"],
+  platinum: ["Everything in Gold", "Top placement everywhere", "Custom co-branded campaign", "Direct shelter partnership"],
 };
 
 export default function SponsorsPage() {
+  const { user } = useAuth();
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ business_name: "", website: "", tier: "bronze" });
+
+  useEffect(() => {
+    supabase.from("sponsors").select("id, business_name, logo, website, tier").eq("approved", true).order("created_at").then(({ data }) => {
+      setSponsors(data || []);
+      setLoading(false);
+    });
+  }, []);
+
+  const handleRegister = async () => {
+    if (!user) { toast.error("Please sign in"); return; }
+    if (!form.business_name) { toast.error("Business name is required"); return; }
+    setSubmitting(true);
+    const { error } = await supabase.from("sponsors").insert({
+      user_id: user.id,
+      business_name: form.business_name,
+      website: form.website || null,
+      tier: form.tier,
+    });
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Sponsor application submitted! Pending admin approval.");
+      setOpen(false);
+      setForm({ business_name: "", website: "", tier: "bronze" });
+    }
+    setSubmitting(false);
+  };
+
   return (
     <div className="page-container">
-      <h1 className="page-title"><Megaphone className="inline h-7 w-7 text-accent mr-2" />Our Sponsors</h1>
-      <p className="text-muted-foreground mb-6">Businesses helping pets get home. Interested in sponsoring? Contact us!</p>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="page-title mb-0"><Megaphone className="inline h-7 w-7 text-accent mr-2" />Our Sponsors</h1>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="hero" className="rounded-xl"><Plus className="h-4 w-4 mr-1" /> Become a Sponsor</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle className="font-heading">Sponsor Application</DialogTitle></DialogHeader>
+            <div className="space-y-3 mt-2">
+              <Input placeholder="Business Name *" value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
+              <Input placeholder="Website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
+              <Select value={form.tier} onValueChange={(v) => setForm({ ...form, tier: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bronze">Bronze</SelectItem>
+                  <SelectItem value="silver">Silver</SelectItem>
+                  <SelectItem value="gold">Gold</SelectItem>
+                  <SelectItem value="platinum">Platinum</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={handleRegister} disabled={submitting} className="w-full">
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Apply
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+      <p className="text-muted-foreground mb-6">Businesses helping pets get home.</p>
 
       {/* Sponsor Tiers */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
-        {(["Bronze", "Silver", "Gold", "Platinum"] as const).map((tier) => (
-          <Card key={tier} className={`card-hover ${tier === "Platinum" ? "border-primary shadow-lg" : ""}`}>
+        {(["bronze", "silver", "gold", "platinum"] as const).map((tier) => (
+          <Card key={tier} className={`card-hover ${tier === "platinum" ? "border-primary shadow-lg" : ""}`}>
             <CardContent className="p-5">
-              <Badge className={`mb-3 ${tierColor[tier]}`}>{tier}</Badge>
-              <h3 className="font-heading font-bold text-foreground mb-2">{tier} Sponsor</h3>
+              <Badge className={`mb-3 ${tierColor[tier]}`}>{tier.charAt(0).toUpperCase() + tier.slice(1)}</Badge>
+              <h3 className="font-heading font-bold text-foreground mb-2">{tier.charAt(0).toUpperCase() + tier.slice(1)} Sponsor</h3>
               <ul className="space-y-1.5 text-xs text-muted-foreground mb-4">
                 {tierBenefits[tier].map((b) => (
                   <li key={b} className="flex items-start gap-1.5">
@@ -45,9 +112,6 @@ export default function SponsorsPage() {
                   </li>
                 ))}
               </ul>
-              <Button variant="outline" size="sm" className="w-full rounded-lg text-xs">
-                Become a {tier} Sponsor
-              </Button>
             </CardContent>
           </Card>
         ))}
@@ -55,22 +119,33 @@ export default function SponsorsPage() {
 
       {/* Current Sponsors */}
       <h2 className="text-xl font-bold font-heading text-foreground mb-4">Current Sponsors</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {mockSponsors.map((s) => (
-          <Card key={s.id} className="card-hover">
-            <CardContent className="p-5 text-center">
-              <div className="h-16 w-16 rounded-full bg-secondary mx-auto mb-3 flex items-center justify-center">
-                <Megaphone className="h-7 w-7 text-primary" />
-              </div>
-              <h3 className="font-heading font-bold text-foreground">{s.name}</h3>
-              <Badge className={`mt-2 ${tierColor[s.tier]}`}>{s.tier} Sponsor</Badge>
-              <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
-                <Globe className="h-3 w-3" />{s.website}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      ) : sponsors.length === 0 ? (
+        <Card><CardContent className="p-12 text-center">
+          <Megaphone className="mx-auto mb-3 h-12 w-12 text-muted-foreground/30" />
+          <p className="text-muted-foreground">No sponsors yet. Be the first!</p>
+        </CardContent></Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {sponsors.map((s) => (
+            <Card key={s.id} className="card-hover">
+              <CardContent className="p-5 text-center">
+                <div className="h-16 w-16 rounded-full bg-secondary mx-auto mb-3 flex items-center justify-center overflow-hidden">
+                  {s.logo ? <img src={s.logo} alt={s.business_name} className="h-full w-full object-cover" /> : <Megaphone className="h-7 w-7 text-primary" />}
+                </div>
+                <h3 className="font-heading font-bold text-foreground">{s.business_name}</h3>
+                {s.tier && <Badge className={`mt-2 ${tierColor[s.tier] || "bg-secondary text-secondary-foreground"}`}>{s.tier.charAt(0).toUpperCase() + s.tier.slice(1)}</Badge>}
+                {s.website && (
+                  <a href={s.website.startsWith("http") ? s.website : `https://${s.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1 hover:text-primary">
+                    <Globe className="h-3 w-3" />{s.website}
+                  </a>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
