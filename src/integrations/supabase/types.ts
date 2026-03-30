@@ -454,6 +454,7 @@ export type Database = {
           approved: boolean | null
           business_name: string
           created_at: string
+          email: string | null
           id: string
           logo: string | null
           tier: string | null
@@ -464,6 +465,7 @@ export type Database = {
           approved?: boolean | null
           business_name: string
           created_at?: string
+          email?: string | null
           id?: string
           logo?: string | null
           tier?: string | null
@@ -474,6 +476,7 @@ export type Database = {
           approved?: boolean | null
           business_name?: string
           created_at?: string
+          email?: string | null
           id?: string
           logo?: string | null
           tier?: string | null
