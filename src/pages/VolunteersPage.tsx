@@ -24,7 +24,7 @@ export default function VolunteersPage() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", county: "", phone: "", skills: "", availability: "" });
+  const [form, setForm] = useState({ name: "", county: "", phone: "", email: "", skills: "", availability: "" });
 
   useEffect(() => {
     supabase.from("volunteers").select("*").order("created_at", { ascending: false }).then(({ data }) => {
