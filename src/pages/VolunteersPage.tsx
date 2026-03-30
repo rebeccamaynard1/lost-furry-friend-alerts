@@ -13,6 +13,7 @@ type Volunteer = {
   name: string;
   county: string | null;
   phone: string | null;
+  email: string | null;
   skills: string | null;
   availability: string | null;
 };
