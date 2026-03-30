@@ -81,6 +81,7 @@ export default function SponsorsPage() {
             <div className="space-y-3 mt-2">
               <Input placeholder="Business Name *" value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
               <Input placeholder="Website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
+              <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <Select value={form.tier} onValueChange={(v) => setForm({ ...form, tier: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
