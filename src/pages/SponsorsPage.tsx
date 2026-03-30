@@ -56,6 +56,7 @@ export default function SponsorsPage() {
       user_id: user.id,
       business_name: form.business_name,
       website: form.website || null,
+      email: form.email || null,
       tier: form.tier,
     });
     if (error) toast.error(error.message);
