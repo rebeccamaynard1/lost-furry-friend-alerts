@@ -33,26 +33,53 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create in-app notifications for tracking
-    const notifications = partnersWithEmail.map((p: any) => ({
-      user_id: p.id, // placeholder - partners don't have user accounts necessarily
-      title: `🚨 Lost Pet Alert: ${pet_name}`,
-      message: `A ${species}${breed ? ` (${breed})` : ""} named "${pet_name}" was lost near ${last_seen_address || "Alabama"}. Color: ${color || "N/A"}. ${description || ""} Contact: ${contact_name} at ${contact_phone}${contact_email ? ` / ${contact_email}` : ""}`,
-      type: "alabama_alert",
-      pet_id: pet_id || null,
-      photo_url: photo_url || null,
-      link: pet_id ? `/my-pets` : null,
-    }));
+    // Send real email to each partner via send-transactional-email
+    let emailsSent = 0;
+    let emailsFailed = 0;
 
-    // Log the alert (we store the email list for reference)
-    console.log(`Alabama Partner Alert sent to ${partnersWithEmail.length} partners for pet: ${pet_name}`);
-    console.log("Partner emails:", partnersWithEmail.map((p: any) => p.email).join(", "));
+    for (const partner of partnersWithEmail) {
+      try {
+        const { error: invokeError } = await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "lost-pet-alert",
+            recipientEmail: partner.email,
+            idempotencyKey: `alabama-alert-${pet_id || pet_name}-${partner.id}`,
+            templateData: {
+              pet_name,
+              species,
+              breed,
+              color,
+              description,
+              last_seen_address,
+              contact_name,
+              contact_phone,
+              contact_email,
+              photo_url,
+              partner_name: partner.name,
+            },
+          },
+        });
+
+        if (invokeError) {
+          console.error(`Failed to send email to ${partner.email}:`, invokeError);
+          emailsFailed++;
+        } else {
+          emailsSent++;
+        }
+      } catch (err) {
+        console.error(`Error sending to ${partner.email}:`, err);
+        emailsFailed++;
+      }
+    }
+
+    console.log(`Alabama Partner Alert: ${emailsSent} sent, ${emailsFailed} failed for pet: ${pet_name}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         partners_notified: partnersWithEmail.length,
-        partner_emails: partnersWithEmail.map((p: any) => p.email),
+        emails_sent: emailsSent,
+        emails_failed: emailsFailed,
         pet_name,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
