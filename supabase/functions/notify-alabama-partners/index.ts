@@ -16,9 +16,7 @@ const corsHeaders = {
 function generateToken(): string {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 Deno.serve(async (req) => {
@@ -37,7 +35,6 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Get all Alabama partners with email
     const { data: partners, error } = await supabase
       .from("alabama_partners")
       .select("id, name, email")
@@ -57,131 +54,162 @@ Deno.serve(async (req) => {
     }
 
     const template = TEMPLATES["lost-pet-alert"];
-    if (!template) {
-      throw new Error("lost-pet-alert template not found in registry");
-    }
+    if (!template) throw new Error("lost-pet-alert template not found");
+
+    // Pre-render the template ONCE with a placeholder partner name.
+    // The partner_name appears in the greeting only — we'll do a simple string replace per partner.
+    const baseData = {
+      pet_name, species, breed, color, description,
+      last_seen_address, contact_name, contact_phone,
+      contact_email, photo_url, partner_name: "{{PARTNER_NAME}}",
+    };
+
+    const baseHtml = await renderAsync(React.createElement(template.component, baseData));
+    const basePlainText = await renderAsync(
+      React.createElement(template.component, baseData),
+      { plainText: true }
+    );
+    const resolvedSubject =
+      typeof template.subject === "function"
+        ? template.subject(baseData)
+        : template.subject;
+
+    // Batch: get all suppressed emails at once
+    const allEmails = partnersWithEmail.map((p: any) => p.email.trim().toLowerCase());
+    const { data: suppressedRows } = await supabase
+      .from("suppressed_emails")
+      .select("email")
+      .in("email", allEmails);
+    const suppressedSet = new Set((suppressedRows || []).map((r: any) => r.email));
+
+    // Get existing unsubscribe tokens in bulk
+    const { data: existingTokens } = await supabase
+      .from("email_unsubscribe_tokens")
+      .select("email, token, used_at")
+      .in("email", allEmails);
+    const tokenMap = new Map((existingTokens || []).map((t: any) => [t.email, t]));
 
     let emailsQueued = 0;
     let emailsFailed = 0;
+    let emailsSkipped = 0;
+
+    // Process in batches of 50 for token creation
+    const BATCH = 50;
+    const needsToken: { email: string; token: string }[] = [];
 
     for (const partner of partnersWithEmail) {
-      try {
-        const normalizedEmail = partner.email.trim().toLowerCase();
-        const idempotencyKey = `alabama-alert-${pet_id || pet_name}-${partner.id}`;
-        const messageId = crypto.randomUUID();
+      const email = partner.email.trim().toLowerCase();
+      if (suppressedSet.has(email)) { emailsSkipped++; continue; }
 
-        // Check suppression
-        const { data: suppressed } = await supabase
-          .from("suppressed_emails")
-          .select("id")
-          .eq("email", normalizedEmail)
-          .maybeSingle();
+      const existing = tokenMap.get(email);
+      if (existing?.used_at) { emailsSkipped++; continue; }
 
-        if (suppressed) {
-          console.log(`Skipping suppressed email: ${normalizedEmail}`);
-          continue;
-        }
+      if (!existing) {
+        const token = generateToken();
+        needsToken.push({ email, token });
+        tokenMap.set(email, { email, token, used_at: null });
+      }
+    }
 
-        // Ensure unsubscribe token exists
-        let unsubscribeToken: string;
-        const { data: existingToken } = await supabase
+    // Bulk upsert tokens
+    if (needsToken.length > 0) {
+      for (let i = 0; i < needsToken.length; i += BATCH) {
+        const batch = needsToken.slice(i, i + BATCH);
+        await supabase
           .from("email_unsubscribe_tokens")
-          .select("token, used_at")
-          .eq("email", normalizedEmail)
-          .maybeSingle();
+          .upsert(batch, { onConflict: "email", ignoreDuplicates: true });
+      }
+      // Re-read tokens we just created to handle races
+      const newEmails = needsToken.map((t) => t.email);
+      const { data: freshTokens } = await supabase
+        .from("email_unsubscribe_tokens")
+        .select("email, token")
+        .in("email", newEmails);
+      for (const t of freshTokens || []) {
+        const existing = tokenMap.get(t.email);
+        if (existing) existing.token = t.token;
+      }
+    }
 
-        if (existingToken && !existingToken.used_at) {
-          unsubscribeToken = existingToken.token;
-        } else if (!existingToken) {
-          unsubscribeToken = generateToken();
-          await supabase
-            .from("email_unsubscribe_tokens")
-            .upsert(
-              { token: unsubscribeToken, email: normalizedEmail },
-              { onConflict: "email", ignoreDuplicates: true }
-            );
-          // Re-read in case of race
-          const { data: storedToken } = await supabase
-            .from("email_unsubscribe_tokens")
-            .select("token")
-            .eq("email", normalizedEmail)
-            .maybeSingle();
-          if (storedToken) unsubscribeToken = storedToken.token;
-        } else {
-          // Token used = suppressed, skip
-          console.log(`Skipping already-unsubscribed: ${normalizedEmail}`);
-          continue;
-        }
+    // Now enqueue all emails
+    const pendingLogs: any[] = [];
+    const enqueuePayloads: { email: string; messageId: string; partnerId: string; partnerName: string; token: string }[] = [];
 
-        const templateData = {
-          pet_name, species, breed, color, description,
-          last_seen_address, contact_name, contact_phone,
-          contact_email, photo_url, partner_name: partner.name,
-        };
+    for (const partner of partnersWithEmail) {
+      const email = partner.email.trim().toLowerCase();
+      if (suppressedSet.has(email)) continue;
 
-        // Render template
-        const html = await renderAsync(
-          React.createElement(template.component, templateData)
-        );
-        const plainText = await renderAsync(
-          React.createElement(template.component, templateData),
-          { plainText: true }
-        );
+      const tokenEntry = tokenMap.get(email);
+      if (!tokenEntry || tokenEntry.used_at) continue;
 
-        const resolvedSubject =
-          typeof template.subject === "function"
-            ? template.subject(templateData)
-            : template.subject;
+      const messageId = crypto.randomUUID();
+      pendingLogs.push({
+        message_id: messageId,
+        template_name: "lost-pet-alert",
+        recipient_email: email,
+        status: "pending",
+      });
+      enqueuePayloads.push({
+        email,
+        messageId,
+        partnerId: partner.id,
+        partnerName: partner.name,
+        token: tokenEntry.token,
+      });
+    }
 
-        // Log pending
-        await supabase.from("email_send_log").insert({
-          message_id: messageId,
-          template_name: "lost-pet-alert",
-          recipient_email: normalizedEmail,
-          status: "pending",
-        });
+    // Bulk insert pending logs
+    if (pendingLogs.length > 0) {
+      for (let i = 0; i < pendingLogs.length; i += BATCH) {
+        await supabase.from("email_send_log").insert(pendingLogs.slice(i, i + BATCH));
+      }
+    }
 
-        // Enqueue directly — no edge function invocation needed
+    // Enqueue emails one by one (RPC doesn't support batch, but no rate limit)
+    for (const item of enqueuePayloads) {
+      try {
+        const html = baseHtml.replaceAll("{{PARTNER_NAME}}", item.partnerName);
+        const text = basePlainText.replaceAll("{{PARTNER_NAME}}", item.partnerName);
+
         const { error: enqueueError } = await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
-            message_id: messageId,
-            to: normalizedEmail,
+            message_id: item.messageId,
+            to: item.email,
             from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
             sender_domain: SENDER_DOMAIN,
             subject: resolvedSubject,
             html,
-            text: plainText,
+            text,
             purpose: "transactional",
             label: "lost-pet-alert",
-            idempotency_key: idempotencyKey,
-            unsubscribe_token: unsubscribeToken,
+            idempotency_key: `alabama-alert-${pet_id || pet_name}-${item.partnerId}`,
+            unsubscribe_token: item.token,
             queued_at: new Date().toISOString(),
           },
         });
 
         if (enqueueError) {
-          console.error(`Failed to enqueue for ${normalizedEmail}:`, enqueueError);
+          console.error(`Enqueue failed for ${item.email}:`, enqueueError);
           emailsFailed++;
         } else {
           emailsQueued++;
         }
       } catch (err) {
-        console.error(`Error processing ${partner.email}:`, err);
+        console.error(`Error enqueuing ${item.email}:`, err);
         emailsFailed++;
       }
     }
 
-    console.log(
-      `Alabama Partner Alert: ${emailsQueued} queued, ${emailsFailed} failed for pet: ${pet_name}`
-    );
+    console.log(`Alabama Alert: ${emailsQueued} queued, ${emailsFailed} failed, ${emailsSkipped} skipped for ${pet_name}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        partners_notified: partnersWithEmail.length,
+        partners_total: partnersWithEmail.length,
         emails_queued: emailsQueued,
         emails_failed: emailsFailed,
+        emails_skipped: emailsSkipped,
         pet_name,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
