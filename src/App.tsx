@@ -27,6 +27,9 @@ import NotificationSettingsPage from "@/pages/NotificationSettingsPage";
 import AlabamaPartnersPage from "@/pages/AlabamaPartnersPage";
 import ProfileSettingsPage from "@/pages/ProfileSettingsPage";
 import UnsubscribePage from "@/pages/UnsubscribePage";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import PetDetailPage from "@/pages/PetDetailPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +67,9 @@ const App = () => (
               <Route path="/alabama-partners" element={<AlabamaPartnersPage />} />
               <Route path="/profile" element={<ProfileSettingsPage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/pet/:id" element={<PetDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>

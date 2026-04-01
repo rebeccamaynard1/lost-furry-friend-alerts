@@ -37,4 +37,5 @@ Lost Furry Friend Alerts (formerly "Fur Babies Lost & Found USA") - pet recovery
 ## Pages
 - Home, ReportLost, ReportFound, Map, Sightings, Messages, MyPets
 - Shelters, Volunteers, RuralPartners, Sponsors, Donate, Premium
-- Admin, Login, Signup, PaymentSuccess, Help, NotificationSettings
+- Admin, Login, Signup, ForgotPassword, ResetPassword, PaymentSuccess, Help, NotificationSettings
+- PetDetail (/pet/:id) with photo gallery, contact info, and message owner button
