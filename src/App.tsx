@@ -27,6 +27,9 @@ import NotificationSettingsPage from "@/pages/NotificationSettingsPage";
 import AlabamaPartnersPage from "@/pages/AlabamaPartnersPage";
 import ProfileSettingsPage from "@/pages/ProfileSettingsPage";
 import UnsubscribePage from "@/pages/UnsubscribePage";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import PetDetailPage from "@/pages/PetDetailPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
