@@ -18,7 +18,11 @@ export default function PhotoUpload({ photos, onPhotosChange, userId, maxPhotos 
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || !userId) return;
+    if (!files) return;
+    if (!userId) {
+      toast.error("Please sign in to upload photos");
+      return;
+    }
     if (photos.length + files.length > maxPhotos) {
       toast.error(`Maximum ${maxPhotos} photos allowed`);
       return;
