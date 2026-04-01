@@ -67,6 +67,9 @@ const App = () => (
               <Route path="/alabama-partners" element={<AlabamaPartnersPage />} />
               <Route path="/profile" element={<ProfileSettingsPage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/pet/:id" element={<PetDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>
