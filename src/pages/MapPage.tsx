@@ -1,11 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useEffect, useState, useMemo, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, AlertTriangle, CheckCircle2, Eye, Building2, Users, Locate, Filter } from "lucide-react";
+import { MapPin, AlertTriangle, CheckCircle2, Eye, Building2, Locate } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 
@@ -37,14 +34,13 @@ const MARKER_COLORS = {
   found: "hsl(145, 65%, 42%)",
   sighting: "hsl(30, 90%, 55%)",
   shelter: "hsl(260, 60%, 55%)",
-  volunteer: "hsl(199, 78%, 48%)",
 };
 
 const legend = [
-  { label: "Lost Pets", color: "bg-lost", icon: AlertTriangle, key: "lost" },
-  { label: "Found Pets", color: "bg-found", icon: CheckCircle2, key: "found" },
-  { label: "Sightings", color: "bg-sighting", icon: Eye, key: "sighting" },
-  { label: "Shelters", color: "bg-shelter", icon: Building2, key: "shelter" },
+  { label: "Lost Pets", color: "bg-red-500", icon: AlertTriangle, key: "lost" },
+  { label: "Found Pets", color: "bg-green-500", icon: CheckCircle2, key: "found" },
+  { label: "Sightings", color: "bg-orange-400", icon: Eye, key: "sighting" },
+  { label: "Shelters", color: "bg-purple-500", icon: Building2, key: "shelter" },
 ];
 
 type MapMarker = {
@@ -58,34 +54,27 @@ type MapMarker = {
   photo?: string | null;
 };
 
-function LocateControl() {
-  const map = useMap();
-  const handleLocate = () => {
-    map.locate({ setView: true, maxZoom: 13 });
-  };
-  return (
-    <button
-      onClick={handleLocate}
-      className="absolute bottom-4 right-4 z-[1000] rounded-full bg-card p-3 shadow-lg border border-border hover:bg-secondary transition-colors"
-      title="Go to my location"
-    >
-      <Locate className="h-5 w-5 text-primary" />
-    </button>
-  );
-}
-
 export default function MapPage() {
   const [markers, setMarkers] = useState<MapMarker[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ lost: true, found: true, sighting: true, shelter: true });
+  const mapRef = useRef<L.Map | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const layerGroupRef = useRef<L.LayerGroup | null>(null);
+
+  const icons = useMemo(() => ({
+    lost: createColorIcon(MARKER_COLORS.lost),
+    found: createColorIcon(MARKER_COLORS.found),
+    sighting: createColorIcon(MARKER_COLORS.sighting),
+    shelter: createColorIcon(MARKER_COLORS.shelter),
+  }), []);
 
   useEffect(() => {
     async function fetchData() {
-      const [lostRes, foundRes, sightRes, shelterRes] = await Promise.all([
+      const [lostRes, foundRes, sightRes] = await Promise.all([
         supabase.from("lost_pets").select("id, pet_name, species, breed, last_seen_lat, last_seen_lng, last_seen_address, photos, status").eq("status", "lost"),
         supabase.from("found_pets").select("id, species, breed, color, found_lat, found_lng, found_address, photos, status").eq("status", "found"),
         supabase.from("sightings").select("id, location_lat, location_lng, location_address, notes, photo, seen_at"),
-        supabase.from("shelters").select("id, name, address, phone, logo, approved").eq("approved", true),
       ]);
 
       const all: MapMarker[] = [];
@@ -120,24 +109,55 @@ export default function MapPage() {
         }
       });
 
-      (shelterRes.data || []).forEach(() => {
-        // Shelters don't have lat/lng yet — skip for now
-      });
-
       setMarkers(all);
       setLoading(false);
     }
     fetchData();
   }, []);
 
-  const icons = useMemo(() => ({
-    lost: createColorIcon(MARKER_COLORS.lost),
-    found: createColorIcon(MARKER_COLORS.found),
-    sighting: createColorIcon(MARKER_COLORS.sighting),
-    shelter: createColorIcon(MARKER_COLORS.shelter),
-  }), []);
+  // Initialize map
+  useEffect(() => {
+    if (loading || !mapContainerRef.current || mapRef.current) return;
 
-  const filtered = markers.filter((m) => filters[m.type]);
+    const map = L.map(mapContainerRef.current).setView([39.8283, -98.5795], 4);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+
+    mapRef.current = map;
+    layerGroupRef.current = L.layerGroup().addTo(map);
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      layerGroupRef.current = null;
+    };
+  }, [loading]);
+
+  // Update markers when filters change
+  useEffect(() => {
+    if (!layerGroupRef.current) return;
+    layerGroupRef.current.clearLayers();
+
+    const filtered = markers.filter((m) => filters[m.type]);
+    filtered.forEach((m) => {
+      const popupContent = `
+        <div style="min-width:180px">
+          ${m.photo ? `<img src="${m.photo}" alt="${m.title}" style="width:100%;height:96px;object-fit:cover;border-radius:4px;margin-bottom:8px" />` : ""}
+          <p style="font-weight:bold;font-size:14px;margin:0">${m.title}</p>
+          <p style="font-size:12px;color:#666;margin:4px 0 0">${m.subtitle}</p>
+          ${m.link ? `<a href="${m.link}" style="font-size:12px;color:#2563eb;text-decoration:underline;margin-top:8px;display:block">View Details →</a>` : ""}
+        </div>
+      `;
+      L.marker([m.lat, m.lng], { icon: icons[m.type] })
+        .bindPopup(popupContent)
+        .addTo(layerGroupRef.current!);
+    });
+  }, [markers, filters, icons]);
+
+  const handleLocate = () => {
+    mapRef.current?.locate({ setView: true, maxZoom: 13 });
+  };
 
   const toggleFilter = (key: string) => {
     setFilters((f) => ({ ...f, [key]: !f[key as keyof typeof f] }));
@@ -179,42 +199,20 @@ export default function MapPage() {
           {loading ? (
             <div className="flex h-[65vh] items-center justify-center bg-secondary/50">
               <div className="text-center">
-                <MapPin className="mx-auto mb-3 h-12 w-12 text-primary animate-pulse-soft" />
+                <MapPin className="mx-auto mb-3 h-12 w-12 text-primary animate-pulse" />
                 <p className="text-lg font-heading font-bold text-foreground">Loading Map...</p>
               </div>
             </div>
           ) : (
-            <div className="h-[65vh]">
-              <MapContainer
-                center={[39.8283, -98.5795]}
-                zoom={4}
-                className="h-full w-full z-0"
-                scrollWheelZoom
+            <div className="h-[65vh] relative">
+              <div ref={mapContainerRef} className="h-full w-full z-0" />
+              <button
+                onClick={handleLocate}
+                className="absolute bottom-4 right-4 z-[1000] rounded-full bg-card p-3 shadow-lg border border-border hover:bg-secondary transition-colors"
+                title="Go to my location"
               >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <LocateControl />
-                {filtered.map((m) => (
-                  <Marker key={`${m.type}-${m.id}`} position={[m.lat, m.lng]} icon={icons[m.type]}>
-                    <Popup>
-                      <div className="min-w-[180px]">
-                        {m.photo && (
-                          <img src={m.photo} alt={m.title} className="w-full h-24 object-cover rounded mb-2" />
-                        )}
-                        <p className="font-bold text-sm">{m.title}</p>
-                        <p className="text-xs text-gray-600 mt-1">{m.subtitle}</p>
-                        {m.link && (
-                          <Link to={m.link} className="text-xs text-blue-600 underline mt-2 block">
-                            View Details →
-                          </Link>
-                        )}
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
+                <Locate className="h-5 w-5 text-primary" />
+              </button>
             </div>
           )}
         </CardContent>
@@ -229,7 +227,7 @@ export default function MapPage() {
             <Card key={item.key}>
               <CardContent className="flex items-center gap-3 p-4">
                 <div className={`rounded-full p-2 ${item.color}/20`}>
-                  <Icon className={`h-5 w-5`} style={{ color: MARKER_COLORS[item.key as keyof typeof MARKER_COLORS] }} />
+                  <Icon className="h-5 w-5" style={{ color: MARKER_COLORS[item.key as keyof typeof MARKER_COLORS] }} />
                 </div>
                 <div>
                   <p className="text-2xl font-bold font-heading text-foreground">{count}</p>
