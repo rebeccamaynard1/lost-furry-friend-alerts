@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { geocodeAddress } from "@/lib/geocode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,17 @@ export default function ReportFoundPage() {
     if (!user) { toast.error("Please sign in to report a found pet."); navigate("/login"); return; }
 
     setLoading(true);
+    // Geocode the address
+    let found_lat: number | null = null;
+    let found_lng: number | null = null;
+    if (formData.foundAddress) {
+      const coords = await geocodeAddress(formData.foundAddress);
+      if (coords) {
+        found_lat = coords.lat;
+        found_lng = coords.lng;
+      }
+    }
+
     const { data, error } = await supabase.from("found_pets").insert({
       user_id: user.id, species: formData.species,
       breed: formData.breed || null, color: formData.color,
@@ -38,6 +50,8 @@ export default function ReportFoundPage() {
       holding_location: formData.holdingLocation || null,
       description: formData.description || null,
       found_address: formData.foundAddress || null,
+      found_lat,
+      found_lng,
       photos: photos.length > 0 ? photos : null,
     }).select().single();
 

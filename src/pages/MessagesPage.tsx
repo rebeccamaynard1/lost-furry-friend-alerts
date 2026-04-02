@@ -2,12 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, Search, Send, Loader2, ArrowLeft } from "lucide-react";
+import { MessageSquare, Send, Loader2, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 type Conversation = {
   user_id: string;
@@ -28,6 +28,7 @@ type Message = {
 
 export default function MessagesPage() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -36,6 +37,18 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Handle ?to= query param
+  useEffect(() => {
+    if (!user) return;
+    const toUserId = searchParams.get("to");
+    if (toUserId && toUserId !== user.id) {
+      supabase.from("profiles").select("name, email").eq("user_id", toUserId).single().then(({ data }) => {
+        setSelectedUser(toUserId);
+        setSelectedName(data?.name || data?.email || "User");
+      });
+    }
+  }, [user, searchParams]);
 
   // Fetch conversations
   useEffect(() => {
@@ -49,7 +62,6 @@ export default function MessagesPage() {
 
       if (!data) { setLoading(false); return; }
 
-      // Group by other user
       const convMap = new Map<string, { msgs: typeof data }>();
       data.forEach((m) => {
         const otherId = m.sender_id === user!.id ? m.receiver_id : m.sender_id;
@@ -57,7 +69,6 @@ export default function MessagesPage() {
         convMap.get(otherId)!.msgs.push(m);
       });
 
-      // Get profiles for names
       const otherIds = Array.from(convMap.keys());
       const { data: profiles } = otherIds.length > 0
         ? await supabase.from("profiles").select("user_id, name, email").in("user_id", otherIds)
@@ -94,7 +105,6 @@ export default function MessagesPage() {
         .order("created_at", { ascending: true });
       setMessages(data || []);
 
-      // Mark as read
       await supabase
         .from("messages")
         .update({ read: true })
@@ -161,6 +171,9 @@ export default function MessagesPage() {
           <span className="font-heading font-bold text-foreground">{selectedName}</span>
         </div>
         <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+          {messages.length === 0 && (
+            <p className="text-center text-sm text-muted-foreground py-8">No messages yet. Say hello!</p>
+          )}
           {messages.map((m) => (
             <div key={m.id} className={`flex ${m.sender_id === user.id ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${

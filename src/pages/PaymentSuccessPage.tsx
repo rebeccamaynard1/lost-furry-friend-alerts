@@ -1,10 +1,21 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Heart, Home } from "lucide-react";
+import { CheckCircle2, Home } from "lucide-react";
 import logo from "@/assets/littlefoot-logo-1.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function PaymentSuccessPage() {
+  const { checkSubscription } = useAuth();
+
+  useEffect(() => {
+    checkSubscription();
+    const interval = setInterval(checkSubscription, 5000);
+    const timeout = setTimeout(() => clearInterval(interval), 30000);
+    return () => { clearInterval(interval); clearTimeout(timeout); };
+  }, [checkSubscription]);
+
   return (
     <div className="page-container flex items-center justify-center min-h-[60vh]">
       <Card className="w-full max-w-md text-center">

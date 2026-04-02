@@ -25,8 +25,8 @@ export default function GlobalSearch() {
     ]);
 
     const r: Result[] = [];
-    (lost.data || []).forEach((p) => r.push({ id: p.id, type: "lost", title: `🚨 ${p.pet_name}`, subtitle: `${p.species}${p.breed ? ` • ${p.breed}` : ""}`, link: "/my-pets" }));
-    (found.data || []).forEach((p) => r.push({ id: p.id, type: "found", title: `✅ Found ${p.species}`, subtitle: `${p.color}${p.breed ? ` • ${p.breed}` : ""}`, link: "/report-found" }));
+    (lost.data || []).forEach((p) => r.push({ id: p.id, type: "lost", title: `🚨 ${p.pet_name}`, subtitle: `${p.species}${p.breed ? ` • ${p.breed}` : ""}`, link: `/pet/${p.id}` }));
+    (found.data || []).forEach((p) => r.push({ id: p.id, type: "found", title: `✅ Found ${p.species}`, subtitle: `${p.color}${p.breed ? ` • ${p.breed}` : ""}`, link: `/pet/${p.id}?type=found` }));
     (shelters.data || []).forEach((s) => r.push({ id: s.id, type: "shelter", title: s.name, subtitle: s.address, link: "/shelters" }));
 
     setResults(r);
