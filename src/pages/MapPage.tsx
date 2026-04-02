@@ -95,7 +95,7 @@ export default function MapPage() {
           all.push({
             id: p.id, type: "lost", lat: p.last_seen_lat, lng: p.last_seen_lng,
             title: `🚨 ${p.pet_name}`, subtitle: `${p.species}${p.breed ? ` • ${p.breed}` : ""} — ${p.last_seen_address || "Unknown"}`,
-            link: `/report-lost`, photo: p.photos?.[0] || null,
+            link: `/pet/${p.id}`, photo: p.photos?.[0] || null,
           });
         }
       });
