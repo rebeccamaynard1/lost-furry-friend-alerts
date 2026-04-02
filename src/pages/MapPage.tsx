@@ -105,7 +105,7 @@ export default function MapPage() {
           all.push({
             id: p.id, type: "found", lat: p.found_lat, lng: p.found_lng,
             title: `✅ Found ${p.species}`, subtitle: `${p.color}${p.breed ? ` • ${p.breed}` : ""} — ${p.found_address || "Unknown"}`,
-            link: `/report-found`, photo: p.photos?.[0] || null,
+            link: `/pet/${p.id}?type=found`, photo: p.photos?.[0] || null,
           });
         }
       });

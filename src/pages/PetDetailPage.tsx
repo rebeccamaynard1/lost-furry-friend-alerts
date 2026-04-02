@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -11,20 +11,23 @@ import { format } from "date-fns";
 
 type PetDetail = {
   id: string;
-  pet_name: string;
+  pet_name?: string;
   species: string;
   breed: string | null;
   color: string;
-  age: string | null;
-  gender: string | null;
-  microchip: string | null;
-  date_lost: string;
-  last_seen_address: string | null;
+  age?: string | null;
+  gender?: string | null;
+  microchip?: string | null;
+  date_lost?: string;
+  date_found?: string;
+  last_seen_address?: string | null;
+  found_address?: string | null;
+  holding_location?: string | null;
   description: string | null;
   photos: string[] | null;
-  contact_name: string;
-  contact_phone: string;
-  contact_email: string | null;
+  contact_name?: string;
+  contact_phone?: string;
+  contact_email?: string | null;
   status: string;
   user_id: string;
   created_at: string;
@@ -32,6 +35,8 @@ type PetDetail = {
 
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const petType = searchParams.get("type") || "lost";
   const { user } = useAuth();
   const navigate = useNavigate();
   const [pet, setPet] = useState<PetDetail | null>(null);
@@ -41,20 +46,34 @@ export default function PetDetailPage() {
   useEffect(() => {
     if (!id) return;
     (async () => {
-      const { data, error } = await supabase
-        .from("lost_pets")
-        .select("id, pet_name, species, breed, color, age, gender, microchip, date_lost, last_seen_address, description, photos, contact_name, contact_phone, contact_email, status, user_id, created_at")
-        .eq("id", id)
-        .single();
-      if (error || !data) {
-        toast.error("Pet not found");
-        navigate("/");
+      if (petType === "found") {
+        const { data, error } = await supabase
+          .from("found_pets")
+          .select("id, species, breed, color, date_found, found_address, holding_location, description, photos, status, user_id, created_at")
+          .eq("id", id)
+          .single();
+        if (error || !data) {
+          toast.error("Pet not found");
+          navigate("/");
+        } else {
+          setPet(data as PetDetail);
+        }
       } else {
-        setPet(data);
+        const { data, error } = await supabase
+          .from("lost_pets")
+          .select("id, pet_name, species, breed, color, age, gender, microchip, date_lost, last_seen_address, description, photos, contact_name, contact_phone, contact_email, status, user_id, created_at")
+          .eq("id", id)
+          .single();
+        if (error || !data) {
+          toast.error("Pet not found");
+          navigate("/");
+        } else {
+          setPet(data as PetDetail);
+        }
       }
       setLoading(false);
     })();
-  }, [id]);
+  }, [id, petType]);
 
   const handleContact = () => {
     if (!user) {
@@ -70,7 +89,7 @@ export default function PetDetailPage() {
   const handleShare = () => {
     const url = window.location.href;
     if (navigator.share) {
-      navigator.share({ title: `Lost Pet: ${pet?.pet_name}`, url });
+      navigator.share({ title: `${petType === "found" ? "Found" : "Lost"} Pet: ${pet?.pet_name || pet?.species}`, url });
     } else {
       navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard!");
@@ -87,6 +106,11 @@ export default function PetDetailPage() {
 
   if (!pet) return null;
 
+  const isLost = petType !== "found";
+  const displayName = pet.pet_name || `Found ${pet.species}`;
+  const dateLabel = isLost ? "Lost" : "Found";
+  const dateValue = pet.date_lost || pet.date_found;
+  const address = pet.last_seen_address || pet.found_address;
   const statusColor = pet.status === "lost" ? "destructive" : pet.status === "reunited" ? "default" : "secondary";
   const SpeciesIcon = pet.species?.toLowerCase() === "cat" ? Cat : Dog;
 
@@ -100,7 +124,7 @@ export default function PetDetailPage() {
       {pet.photos && pet.photos.length > 0 && (
         <div className="mb-6">
           <div className="aspect-video rounded-xl overflow-hidden bg-muted mb-2">
-            <img src={pet.photos[activePhoto]} alt={pet.pet_name} className="w-full h-full object-cover" />
+            <img src={pet.photos[activePhoto]} alt={displayName} className="w-full h-full object-cover" />
           </div>
           {pet.photos.length > 1 && (
             <div className="flex gap-2 overflow-x-auto">
@@ -123,7 +147,7 @@ export default function PetDetailPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <SpeciesIcon className="h-5 w-5 text-muted-foreground" />
-            <h1 className="text-2xl font-bold font-heading text-foreground">{pet.pet_name}</h1>
+            <h1 className="text-2xl font-bold font-heading text-foreground">{displayName}</h1>
             <Badge variant={statusColor} className="capitalize">{pet.status}</Badge>
           </div>
           <p className="text-muted-foreground text-sm">
@@ -140,15 +164,20 @@ export default function PetDetailPage() {
         <Card>
           <CardContent className="p-4 space-y-3">
             <h2 className="font-semibold text-foreground">Details</h2>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              Lost on {format(new Date(pet.date_lost), "MMMM d, yyyy")}
-            </div>
-            {pet.last_seen_address && (
+            {dateValue && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                {dateLabel} on {format(new Date(dateValue), "MMMM d, yyyy")}
+              </div>
+            )}
+            {address && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                {pet.last_seen_address}
+                {address}
               </div>
+            )}
+            {pet.holding_location && (
+              <p className="text-sm text-muted-foreground">Holding: {pet.holding_location}</p>
             )}
             {pet.microchip && (
               <p className="text-sm text-muted-foreground">Microchip: {pet.microchip}</p>
@@ -162,16 +191,23 @@ export default function PetDetailPage() {
         <Card>
           <CardContent className="p-4 space-y-3">
             <h2 className="font-semibold text-foreground">Contact</h2>
-            <p className="text-sm text-foreground font-medium">{pet.contact_name}</p>
-            <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
-              <Phone className="h-4 w-4" />
-              {pet.contact_phone}
-            </a>
+            {pet.contact_name && (
+              <p className="text-sm text-foreground font-medium">{pet.contact_name}</p>
+            )}
+            {pet.contact_phone && (
+              <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                <Phone className="h-4 w-4" />
+                {pet.contact_phone}
+              </a>
+            )}
             {pet.contact_email && (
               <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
                 <Mail className="h-4 w-4" />
                 {pet.contact_email}
               </a>
+            )}
+            {!isLost && !pet.contact_name && (
+              <p className="text-sm text-muted-foreground">Contact the reporter via message.</p>
             )}
             {user && user.id !== pet.user_id && (
               <Button variant="hero" className="w-full mt-2" onClick={handleContact}>
