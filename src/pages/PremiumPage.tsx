@@ -19,7 +19,7 @@ const features = [
 ];
 
 // Note: Replace with actual Stripe price ID after creating the product in Stripe dashboard
-const PREMIUM_PRICE_ID = "price_premium_monthly";
+const PREMIUM_PRICE_ID = "price_1TEM6rCn19AGQAKoNBZwp9gm";
 
 export default function PremiumPage() {
   const { user, isPremium, subscriptionEnd } = useAuth();
