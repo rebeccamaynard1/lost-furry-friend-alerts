@@ -40,6 +40,17 @@ export default function ReportLostPage() {
     if (!user) { toast.error("Please sign in to report a lost pet."); navigate("/login"); return; }
 
     setLoading(true);
+    // Geocode the address
+    let last_seen_lat: number | null = null;
+    let last_seen_lng: number | null = null;
+    if (formData.lastSeenAddress) {
+      const coords = await geocodeAddress(formData.lastSeenAddress);
+      if (coords) {
+        last_seen_lat = coords.lat;
+        last_seen_lng = coords.lng;
+      }
+    }
+
     const { data, error } = await supabase.from("lost_pets").insert({
       user_id: user.id,
       pet_name: formData.petName, species: formData.species,
@@ -50,6 +61,8 @@ export default function ReportLostPage() {
       contact_name: formData.contactName, contact_phone: formData.contactPhone,
       contact_email: formData.contactEmail || null,
       last_seen_address: formData.lastSeenAddress || null,
+      last_seen_lat,
+      last_seen_lng,
       photos: photos.length > 0 ? photos : null,
     }).select().single();
 
