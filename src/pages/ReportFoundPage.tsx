@@ -61,7 +61,9 @@ export default function ReportFoundPage() {
       await supabase.functions.invoke("process-alerts", {
         body: { type: "found", pet_id: data.id, species: formData.species, breed: formData.breed, photo_url: photos[0] || null },
       });
-    } catch {}
+    } catch (err) {
+      console.error("Failed to send alerts:", err);
+    }
 
     toast.success("Found pet report submitted! Nearby owners will be notified.");
     setLoading(false);

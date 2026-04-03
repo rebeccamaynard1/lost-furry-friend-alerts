@@ -89,7 +89,9 @@ export default function ReportLostPage() {
             photo_url: photos[0] || null,
           },
         });
-      } catch {}
+      } catch (err) {
+        console.error("Failed to notify Alabama partners:", err);
+      }
     }
 
     toast.success("Lost pet report submitted! Nearby users will be alerted.");
