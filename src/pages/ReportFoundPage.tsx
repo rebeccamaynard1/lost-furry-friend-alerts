@@ -59,7 +59,7 @@ export default function ReportFoundPage() {
 
     try {
       await supabase.functions.invoke("process-alerts", {
-        body: { type: "found", pet_id: data.id, species: formData.species, breed: formData.breed, photo_url: photos[0] || null },
+        body: { type: "found", pet_id: data.id, lat: found_lat, lng: found_lng, species: formData.species, breed: formData.breed, photo_url: photos[0] || null, reporter_user_id: user.id },
       });
     } catch (err) {
       console.error("Failed to send alerts:", err);
