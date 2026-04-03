@@ -17,6 +17,23 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Simple geocode using Nominatim (same as client-side helper)
+async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
+      { headers: { "User-Agent": "LostFurryFriendAlerts/1.0" } }
+    );
+    const data = await res.json();
+    if (data && data.length > 0) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+  } catch {
+    // geocode failed silently
+  }
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -29,26 +46,46 @@ serve(async (req) => {
   );
 
   try {
-    const { type, pet_id, lat, lng, pet_name, species, breed, photo_url } = await req.json();
+    const { type, pet_id, lat, lng, pet_name, species, breed, photo_url, reporter_user_id } = await req.json();
 
-    // Get all users with their profiles
+    // We need coordinates to do distance filtering
+    const petLat = typeof lat === "number" ? lat : null;
+    const petLng = typeof lng === "number" ? lng : null;
+
+    // Get all user profiles
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, home_address, subscription_status, alert_radius_miles, state");
+      .select("user_id, home_address, subscription_status, alert_radius_miles");
 
-    if (!profiles) return new Response(JSON.stringify({ sent: 0 }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    if (!profiles) {
+      return new Response(JSON.stringify({ sent: 0 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // For each user, check if they're within alert radius
     const notifications = [];
+
     for (const profile of profiles) {
       // Skip the reporting user
+      if (profile.user_id === reporter_user_id) continue;
+
       const radius = profile.alert_radius_miles || 5;
 
-      // Create notification for nearby users (simplified — in production would use geocoding)
-      // For now, notify all users but mark premium ones as instant
-      const isPremium = profile.subscription_status === "premium";
+      // If we have pet coordinates AND user has a home address, do distance filtering
+      if (petLat !== null && petLng !== null && profile.home_address) {
+        const userCoords = await geocodeAddress(profile.home_address);
+        if (userCoords) {
+          const dist = haversine(petLat, petLng, userCoords.lat, userCoords.lng);
+          if (dist > radius) continue; // Outside alert radius — skip
+        } else {
+          // Can't geocode user address — skip to avoid spamming
+          continue;
+        }
+      } else if (petLat !== null && petLng !== null && !profile.home_address) {
+        // No home address set — skip (can't determine distance)
+        continue;
+      }
+      // If no pet coordinates, fall through and notify (rare edge case)
 
       notifications.push({
         user_id: profile.user_id,
@@ -59,7 +96,7 @@ serve(async (req) => {
         type: "alert",
         pet_id,
         photo_url,
-        link: type === "lost" ? `/report-lost/${pet_id}` : `/report-found/${pet_id}`,
+        link: `/pet/${pet_id}?type=${type}`,
       });
     }
 

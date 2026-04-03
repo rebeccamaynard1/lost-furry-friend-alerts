@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import logo from "@/assets/littlefoot-logo-1.png";
+import logo from "@/assets/littlefoot-logo-1.webp";
 
 export default function SignupPage() {
   const [name, setName] = useState("");

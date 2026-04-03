@@ -10,7 +10,7 @@ import NotificationBell from "@/components/NotificationBell";
 import PremiumBadge from "@/components/PremiumBadge";
 import GlobalSearch from "@/components/GlobalSearch";
 import MemorialFooter from "@/components/MemorialFooter";
-import logo from "@/assets/littlefoot-logo-1.png";
+import logo from "@/assets/littlefoot-logo-1.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 

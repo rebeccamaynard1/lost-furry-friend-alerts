@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle2, MapPin, Eye, PawPrint,
   Heart, Crown, ArrowRight, Search
 } from "lucide-react";
-import logo from "@/assets/littlefoot-logo-1.png";
+import logo from "@/assets/littlefoot-logo-1.webp";
 import { supabase } from "@/integrations/supabase/client";
 import SpotlightSection from "@/components/SpotlightSection";
 import MemorialFooter from "@/components/MemorialFooter";
