@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
-import logo from "@/assets/littlefoot-logo-1.png";
+import logo from "@/assets/littlefoot-logo-1.webp";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

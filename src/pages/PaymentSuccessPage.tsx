@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Home } from "lucide-react";
-import logo from "@/assets/littlefoot-logo-1.png";
+import logo from "@/assets/littlefoot-logo-1.webp";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function PaymentSuccessPage() {

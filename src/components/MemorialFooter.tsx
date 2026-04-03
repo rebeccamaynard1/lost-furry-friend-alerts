@@ -1,4 +1,4 @@
-import logo from "@/assets/littlefoot-logo-1.png";
+import logo from "@/assets/littlefoot-logo-1.webp";
 
 export default function MemorialFooter() {
   return (
