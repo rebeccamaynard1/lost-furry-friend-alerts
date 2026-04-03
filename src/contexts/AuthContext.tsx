@@ -43,8 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsPremium(false);
         setSubscriptionEnd(null);
       }
-    } catch {
-      // Subscription check failed silently
+    } catch (err) {
+      console.error("Subscription check failed:", err);
     }
   }, [session]);
 
