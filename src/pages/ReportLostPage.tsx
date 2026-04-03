@@ -72,7 +72,9 @@ export default function ReportLostPage() {
       await supabase.functions.invoke("process-alerts", {
         body: { type: "lost", pet_id: data.id, pet_name: formData.petName, species: formData.species, breed: formData.breed, photo_url: photos[0] || null },
       });
-    } catch {}
+    } catch (err) {
+      console.error("Failed to send alerts:", err);
+    }
 
     // Auto-notify Alabama partners if pet lost in Alabama
     const addr = (formData.lastSeenAddress || "").toLowerCase();
