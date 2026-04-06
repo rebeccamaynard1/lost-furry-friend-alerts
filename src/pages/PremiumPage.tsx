@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Crown, Check, Zap, Star } from "lucide-react";
+import { Crown, Check, Zap, Star, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -18,13 +18,13 @@ const features = [
   "Ad-free experience",
 ];
 
-// Note: Replace with actual Stripe price ID after creating the product in Stripe dashboard
 const PREMIUM_PRICE_ID = "price_1TEM6rCn19AGQAKoNBZwp9gm";
 
 export default function PremiumPage() {
   const { user, isPremium, subscriptionEnd } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -48,6 +48,20 @@ export default function PremiumPage() {
     setLoading(false);
   };
 
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast.error("Failed to open subscription manager: " + (err.message || "Unknown error"));
+    }
+    setPortalLoading(false);
+  };
+
   return (
     <div className="page-container max-w-2xl text-center">
       <Crown className="mx-auto mb-4 h-14 w-14 text-accent" />
@@ -56,16 +70,28 @@ export default function PremiumPage() {
 
       {isPremium && (
         <Card className="mb-6 border-accent bg-accent/5">
-          <CardContent className="p-4 flex items-center justify-center gap-2">
-            <PremiumBadge />
-            <p className="text-sm font-semibold text-foreground">
-              You're a Premium member!
-              {subscriptionEnd && (
-                <span className="text-muted-foreground font-normal">
-                  {" "}Renews {new Date(subscriptionEnd).toLocaleDateString()}
-                </span>
-              )}
-            </p>
+          <CardContent className="p-4 flex flex-col items-center gap-3">
+            <div className="flex items-center gap-2">
+              <PremiumBadge />
+              <p className="text-sm font-semibold text-foreground">
+                You're a Premium member!
+                {subscriptionEnd && (
+                  <span className="text-muted-foreground font-normal">
+                    {" "}Renews {new Date(subscriptionEnd).toLocaleDateString()}
+                  </span>
+                )}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl"
+              onClick={handleManageSubscription}
+              disabled={portalLoading}
+            >
+              <Settings className="h-4 w-4 mr-1" />
+              {portalLoading ? "Loading..." : "Manage Subscription"}
+            </Button>
           </CardContent>
         </Card>
       )}
