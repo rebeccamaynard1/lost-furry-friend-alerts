@@ -65,11 +65,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (session) {
-      checkSubscription();
-      const interval = setInterval(checkSubscription, 60000);
-      return () => clearInterval(interval);
-    }
+    if (!session?.user) return;
+    checkSubscription();
+
+    // Realtime: listen for profile updates from Stripe webhook
+    const channel = supabase
+      .channel(`profile-${session.user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `user_id=eq.${session.user.id}` },
+        (payload) => {
+          const status = (payload.new as any)?.subscription_status;
+          if (status === "premium") setIsPremium(true);
+          else if (status === "free") { setIsPremium(false); setSubscriptionEnd(null); }
+        }
+      )
+      .subscribe();
+
+    // Fallback poll every 5 minutes (in case realtime drops)
+    const interval = setInterval(checkSubscription, 5 * 60 * 1000);
+    return () => { supabase.removeChannel(channel); clearInterval(interval); };
   }, [session, checkSubscription]);
 
   return (
