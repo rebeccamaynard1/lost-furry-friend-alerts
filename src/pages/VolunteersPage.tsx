@@ -103,7 +103,7 @@ export default function VolunteersPage() {
             <DialogHeader><DialogTitle className="font-heading">Volunteer Registration</DialogTitle></DialogHeader>
             <div className="space-y-3 mt-2">
               <Input placeholder="Your Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <Input placeholder="County (e.g. Travis County, TX)" value={form.county} onChange={(e) => setForm({ ...form, county: e.target.value })} />
+              <CountyPicker value={form.county} onChange={(v) => setForm({ ...form, county: v })} placeholder="Select your county *" />
               <Input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <Input placeholder="Skills (e.g. Drone Pilot, Trapping)" value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} />

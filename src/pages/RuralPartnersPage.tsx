@@ -65,7 +65,7 @@ export default function RuralPartnersPage() {
             <DialogHeader><DialogTitle className="font-heading">Join as Rural Partner</DialogTitle></DialogHeader>
             <div className="space-y-3 mt-2">
               <Input placeholder="Your Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <Input placeholder="County" value={form.county} onChange={(e) => setForm({ ...form, county: e.target.value })} />
+              <CountyPicker value={form.county} onChange={(v) => setForm({ ...form, county: v })} placeholder="Select your county" />
               <Input placeholder="Hunting Area / Region" value={form.hunting_area} onChange={(e) => setForm({ ...form, hunting_area: e.target.value })} />
               <Button onClick={handleRegister} disabled={submitting} className="w-full">
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Register
