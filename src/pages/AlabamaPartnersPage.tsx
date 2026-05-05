@@ -281,6 +281,8 @@ export default function AlabamaPartnersPage() {
             </Card>
           ))}
         </div>
+        <Pagination page={page} pageSize={PAGE_SIZE} total={filtered.length} onPageChange={setPage} />
+        </>
       )}
     </div>
   );
