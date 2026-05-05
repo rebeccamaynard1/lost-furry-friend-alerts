@@ -35,9 +35,26 @@ export default function ReportLostPage() {
     setDuplicateWarning(data && data.length > 0 ? `A report for "${data[0].pet_name}" with this microchip already exists.` : null);
   };
 
+  const validate = (): string | null => {
+    if (!formData.petName.trim()) return "Pet name is required.";
+    if (!formData.species) return "Please select a species.";
+    if (!formData.color.trim()) return "Color is required.";
+    if (!formData.dateLost) return "Date lost is required.";
+    if (new Date(formData.dateLost) > new Date()) return "Date lost cannot be in the future.";
+    if (!formData.contactName.trim()) return "Your name is required.";
+    if (!formData.contactPhone.trim() || formData.contactPhone.replace(/\D/g, "").length < 7)
+      return "A valid phone number is required.";
+    if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail))
+      return "Please enter a valid email address.";
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) { toast.error("Please sign in to report a lost pet."); navigate("/login"); return; }
+
+    const err = validate();
+    if (err) { toast.error(err); return; }
 
     setLoading(true);
     // Geocode the address
@@ -48,19 +65,21 @@ export default function ReportLostPage() {
       if (coords) {
         last_seen_lat = coords.lat;
         last_seen_lng = coords.lng;
+      } else {
+        toast.warning("Couldn't pinpoint that address on the map — report saved without coordinates.");
       }
     }
 
     const { data, error } = await supabase.from("lost_pets").insert({
       user_id: user.id,
-      pet_name: formData.petName, species: formData.species,
-      breed: formData.breed || null, color: formData.color,
-      age: formData.age || null, gender: formData.gender || null,
-      microchip: formData.microchip || null, date_lost: formData.dateLost,
-      description: formData.description || null,
-      contact_name: formData.contactName, contact_phone: formData.contactPhone,
-      contact_email: formData.contactEmail || null,
-      last_seen_address: formData.lastSeenAddress || null,
+      pet_name: formData.petName.trim(), species: formData.species,
+      breed: formData.breed.trim() || null, color: formData.color.trim(),
+      age: formData.age.trim() || null, gender: formData.gender || null,
+      microchip: formData.microchip.trim() || null, date_lost: formData.dateLost,
+      description: formData.description.trim() || null,
+      contact_name: formData.contactName.trim(), contact_phone: formData.contactPhone.trim(),
+      contact_email: formData.contactEmail.trim() || null,
+      last_seen_address: formData.lastSeenAddress.trim() || null,
       last_seen_lat,
       last_seen_lng,
       photos: photos.length > 0 ? photos : null,
