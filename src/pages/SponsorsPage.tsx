@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Megaphone, Globe, Crown, Loader2, Plus } from "lucide-react";
@@ -9,6 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import SEO from "@/components/SEO";
+import Pagination from "@/components/Pagination";
+
+const SPONSOR_PAGE_SIZE = 12;
 
 type Sponsor = {
   id: string;
@@ -40,6 +44,8 @@ export default function SponsorsPage() {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ business_name: "", website: "", tier: "bronze", email: "" });
+  const [tierFilter, setTierFilter] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     supabase.from("sponsors").select("id, business_name, logo, website, tier, email").eq("approved", true).order("created_at").then(({ data }) => {
@@ -68,8 +74,16 @@ export default function SponsorsPage() {
     setSubmitting(false);
   };
 
+  const filteredSponsors = useMemo(
+    () => (tierFilter ? sponsors.filter((s) => s.tier === tierFilter) : sponsors),
+    [sponsors, tierFilter]
+  );
+  useEffect(() => { setPage(1); }, [tierFilter]);
+  const pagedSponsors = filteredSponsors.slice((page - 1) * SPONSOR_PAGE_SIZE, page * SPONSOR_PAGE_SIZE);
+
   return (
     <div className="page-container">
+      <SEO title="Our Sponsors — Lost Furry Friend Alerts" description="Businesses helping pets get home. Become a sponsor and support our nationwide pet recovery network." />
       <div className="flex items-center justify-between mb-6">
         <h1 className="page-title mb-0"><Megaphone className="inline h-7 w-7 text-accent mr-2" />Our Sponsors</h1>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -121,33 +135,45 @@ export default function SponsorsPage() {
       </div>
 
       {/* Current Sponsors */}
-      <h2 className="text-xl font-bold font-heading text-foreground mb-4">Current Sponsors</h2>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <h2 className="text-xl font-bold font-heading text-foreground">Current Sponsors</h2>
+        <select className="rounded-lg border border-input bg-background px-3 py-2 text-sm" value={tierFilter} onChange={(e) => setTierFilter(e.target.value)}>
+          <option value="">All Tiers</option>
+          <option value="platinum">Platinum</option>
+          <option value="gold">Gold</option>
+          <option value="silver">Silver</option>
+          <option value="bronze">Bronze</option>
+        </select>
+      </div>
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-      ) : sponsors.length === 0 ? (
+      ) : filteredSponsors.length === 0 ? (
         <Card><CardContent className="p-12 text-center">
           <Megaphone className="mx-auto mb-3 h-12 w-12 text-muted-foreground/30" />
-          <p className="text-muted-foreground">No sponsors yet. Be the first!</p>
+          <p className="text-muted-foreground">{sponsors.length === 0 ? "No sponsors yet. Be the first!" : "No sponsors match this tier."}</p>
         </CardContent></Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {sponsors.map((s) => (
-            <Card key={s.id} className="card-hover">
-              <CardContent className="p-5 text-center">
-                <div className="h-16 w-16 rounded-full bg-secondary mx-auto mb-3 flex items-center justify-center overflow-hidden">
-                  {s.logo ? <img src={s.logo} alt={s.business_name} className="h-full w-full object-cover" /> : <Megaphone className="h-7 w-7 text-primary" />}
-                </div>
-                <h3 className="font-heading font-bold text-foreground">{s.business_name}</h3>
-                {s.tier && <Badge className={`mt-2 ${tierColor[s.tier] || "bg-secondary text-secondary-foreground"}`}>{s.tier.charAt(0).toUpperCase() + s.tier.slice(1)}</Badge>}
-                {s.website && (
-                  <a href={s.website.startsWith("http") ? s.website : `https://${s.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1 hover:text-primary">
-                    <Globe className="h-3 w-3" />{s.website}
-                  </a>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {pagedSponsors.map((s) => (
+              <Card key={s.id} className="card-hover">
+                <CardContent className="p-5 text-center">
+                  <div className="h-16 w-16 rounded-full bg-secondary mx-auto mb-3 flex items-center justify-center overflow-hidden">
+                    {s.logo ? <img src={s.logo} alt={s.business_name} className="h-full w-full object-cover" /> : <Megaphone className="h-7 w-7 text-primary" />}
+                  </div>
+                  <h3 className="font-heading font-bold text-foreground">{s.business_name}</h3>
+                  {s.tier && <Badge className={`mt-2 ${tierColor[s.tier] || "bg-secondary text-secondary-foreground"}`}>{s.tier.charAt(0).toUpperCase() + s.tier.slice(1)}</Badge>}
+                  {s.website && (
+                    <a href={s.website.startsWith("http") ? s.website : `https://${s.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1 hover:text-primary">
+                      <Globe className="h-3 w-3" />{s.website}
+                    </a>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Pagination page={page} pageSize={SPONSOR_PAGE_SIZE} total={filteredSponsors.length} onPageChange={setPage} />
+        </>
       )}
     </div>
   );

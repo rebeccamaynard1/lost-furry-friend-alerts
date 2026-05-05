@@ -17,7 +17,6 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Simple geocode using Nominatim (same as client-side helper)
 async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
   try {
     const res = await fetch(
@@ -46,46 +45,48 @@ serve(async (req) => {
   );
 
   try {
-    const { type, pet_id, lat, lng, pet_name, species, breed, photo_url, reporter_user_id } = await req.json();
+    const {
+      type, pet_id, lat, lng, pet_name, species, breed, color,
+      description, last_seen_address, contact_name, contact_phone, contact_email,
+      photo_url, reporter_user_id,
+    } = await req.json();
 
-    // We need coordinates to do distance filtering
     const petLat = typeof lat === "number" ? lat : null;
     const petLng = typeof lng === "number" ? lng : null;
 
-    // Get all user profiles
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, home_address, subscription_status, alert_radius_miles");
+      .select("user_id, email, name, home_address, subscription_status, alert_radius_miles, notification_prefs");
 
     if (!profiles) {
-      return new Response(JSON.stringify({ sent: 0 }), {
+      return new Response(JSON.stringify({ sent: 0, emailed: 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const notifications = [];
+    const notifications: any[] = [];
+    const emailRecipients: { email: string; name: string | null; user_id: string }[] = [];
+    const prefKey = type === "lost" ? "lost_nearby" : "found_nearby";
 
     for (const profile of profiles) {
-      // Skip the reporting user
       if (profile.user_id === reporter_user_id) continue;
 
       const radius = profile.alert_radius_miles || 5;
+      let inRange = true;
 
-      // If we have pet coordinates AND user has a home address, do distance filtering
       if (petLat !== null && petLng !== null && profile.home_address) {
         const userCoords = await geocodeAddress(profile.home_address);
         if (userCoords) {
           const dist = haversine(petLat, petLng, userCoords.lat, userCoords.lng);
-          if (dist > radius) continue; // Outside alert radius — skip
+          if (dist > radius) inRange = false;
         } else {
-          // Can't geocode user address — skip to avoid spamming
-          continue;
+          inRange = false;
         }
       } else if (petLat !== null && petLng !== null && !profile.home_address) {
-        // No home address set — skip (can't determine distance)
-        continue;
+        inRange = false;
       }
-      // If no pet coordinates, fall through and notify (rare edge case)
+
+      if (!inRange) continue;
 
       notifications.push({
         user_id: profile.user_id,
@@ -98,13 +99,44 @@ serve(async (req) => {
         photo_url,
         link: `/pet/${pet_id}?type=${type}`,
       });
+
+      // Check email preference
+      const prefs = (profile.notification_prefs as Record<string, boolean> | null) || {};
+      const wantsEmail = prefs[prefKey] !== false; // default true
+      if (wantsEmail && profile.email) {
+        emailRecipients.push({ email: profile.email, name: profile.name, user_id: profile.user_id });
+      }
     }
 
     if (notifications.length > 0) {
       await supabase.from("notifications").insert(notifications);
     }
 
-    return new Response(JSON.stringify({ sent: notifications.length }), {
+    // Send real emails via transactional email pipeline (lost-pet-alert template)
+    let emailed = 0;
+    if (type === "lost" && emailRecipients.length > 0) {
+      for (const r of emailRecipients) {
+        try {
+          const { error: mailErr } = await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "lost-pet-alert",
+              recipientEmail: r.email,
+              idempotencyKey: `lost-alert-${pet_id}-${r.user_id}`,
+              templateData: {
+                pet_name, species, breed, color, description,
+                last_seen_address, contact_name, contact_phone, contact_email,
+                photo_url, partner_name: r.name || undefined,
+              },
+            },
+          });
+          if (!mailErr) emailed++;
+        } catch (err) {
+          console.error("Email enqueue failed for", r.email, err);
+        }
+      }
+    }
+
+    return new Response(JSON.stringify({ sent: notifications.length, emailed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

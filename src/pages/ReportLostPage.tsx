@@ -23,6 +23,7 @@ export default function ReportLostPage() {
     petName: "", species: "", breed: "", color: "", age: "",
     gender: "", microchip: "", dateLost: "", description: "",
     contactName: "", contactPhone: "", contactEmail: "", lastSeenAddress: "",
+    video: "",
   });
 
   const handleChange = (field: string, value: string) => {
@@ -46,6 +47,8 @@ export default function ReportLostPage() {
       return "A valid phone number is required.";
     if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail))
       return "Please enter a valid email address.";
+    if (formData.video && !/^https?:\/\//i.test(formData.video.trim()))
+      return "Video must be a valid URL starting with http(s)://";
     return null;
   };
 
@@ -83,13 +86,22 @@ export default function ReportLostPage() {
       last_seen_lat,
       last_seen_lng,
       photos: photos.length > 0 ? photos : null,
+      video: formData.video.trim() || null,
     }).select().single();
 
     if (error) { toast.error("Failed to submit: " + error.message); setLoading(false); return; }
 
     try {
       await supabase.functions.invoke("process-alerts", {
-        body: { type: "lost", pet_id: data.id, lat: last_seen_lat, lng: last_seen_lng, pet_name: formData.petName, species: formData.species, breed: formData.breed, photo_url: photos[0] || null, reporter_user_id: user.id },
+        body: {
+          type: "lost", pet_id: data.id, lat: last_seen_lat, lng: last_seen_lng,
+          pet_name: formData.petName, species: formData.species, breed: formData.breed,
+          color: formData.color, description: formData.description,
+          last_seen_address: formData.lastSeenAddress,
+          contact_name: formData.contactName, contact_phone: formData.contactPhone,
+          contact_email: formData.contactEmail, photo_url: photos[0] || null,
+          reporter_user_id: user.id,
+        },
       });
     } catch (err) {
       console.error("Failed to send alerts:", err);
@@ -234,9 +246,18 @@ export default function ReportLostPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-lg font-heading">Photos</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader><CardTitle className="text-lg font-heading">Photos & Video</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
             <PhotoUpload photos={photos} onPhotosChange={setPhotos} userId={user?.id} label="Upload photos of your pet" />
+            <div className="space-y-2">
+              <Label>Video URL (optional)</Label>
+              <Input
+                placeholder="YouTube, Vimeo, or any video link"
+                value={formData.video}
+                onChange={(e) => handleChange("video", e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Paste a link to a video of your pet (recent recording can speed up identification).</p>
+            </div>
           </CardContent>
         </Card>
 
