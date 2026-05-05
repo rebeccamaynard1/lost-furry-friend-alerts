@@ -43,9 +43,9 @@ export default function MessagesPage() {
     if (!user) return;
     const toUserId = searchParams.get("to");
     if (toUserId && toUserId !== user.id) {
-      supabase.from("profiles").select("name, email").eq("user_id", toUserId).single().then(({ data }) => {
+      supabase.rpc("get_profile_display_name", { _user_id: toUserId }).then(({ data }) => {
         setSelectedUser(toUserId);
-        setSelectedName(data?.name || data?.email || "User");
+        setSelectedName(data?.[0]?.name || "User");
       });
     }
   }, [user, searchParams]);
