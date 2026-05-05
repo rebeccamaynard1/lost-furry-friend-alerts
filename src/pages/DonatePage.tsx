@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/littlefoot-logo-1.webp";
+import SEO from "@/components/SEO";
 
 const amounts = [5, 10, 25, 50, 100];
 
@@ -48,6 +49,7 @@ export default function DonatePage() {
 
   return (
     <div className="page-container max-w-2xl text-center">
+      <SEO title="Donate to Lost Furry Friend Alerts" description="Support our nationwide pet recovery network. Every donation helps reunite families with their pets." />
       <img src={logo} alt="Little Foot" className="mx-auto mb-4 h-20 w-20 object-contain" />
       <h1 className="page-title">
         <Heart className="inline h-7 w-7 text-lost mr-2" />

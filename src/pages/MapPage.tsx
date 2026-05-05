@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, AlertTriangle, CheckCircle2, Eye, Building2, Locate } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 // Fix Leaflet default icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -165,6 +166,7 @@ export default function MapPage() {
 
   return (
     <div className="page-container">
+      <SEO title="Pet Recovery Map — Lost Furry Friend Alerts" description="Live map of nearby lost pets, found pets, sightings, and shelters helping reunite families with their pets." />
       <h1 className="page-title">
         <MapPin className="inline h-7 w-7 text-primary mr-2" />
         Interactive Map

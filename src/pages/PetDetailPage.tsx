@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowLeft, Calendar, MapPin, Phone, Mail, MessageCircle, Share2, Loader2, Dog, Cat } from "lucide-react";
 import { format } from "date-fns";
+import SEO from "@/components/SEO";
 
 type PetDetail = {
   id: string;
@@ -116,6 +117,7 @@ export default function PetDetailPage() {
 
   return (
     <div className="page-container max-w-3xl">
+      <SEO title={`${(pet as any).pet_name || (pet as any).species || "Pet"} — Lost Furry Friend Alerts`} description={(pet as any).description?.slice(0, 150) || "Pet report on Lost Furry Friend Alerts. Help reunite this pet with their family."} />
       <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
         <ArrowLeft className="h-4 w-4 mr-1" /> Back
       </Button>

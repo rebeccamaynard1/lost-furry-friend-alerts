@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import PremiumBadge from "@/components/PremiumBadge";
+import SEO from "@/components/SEO";
 
 const features = [
   "Instant push alerts when a pet is reported near you",
@@ -64,6 +65,7 @@ export default function PremiumPage() {
 
   return (
     <div className="page-container max-w-2xl text-center">
+      <SEO title="Premium Membership — Lost Furry Friend Alerts" description="Upgrade to Premium for instant alerts, state-wide notifications, priority listings, and more reach." />
       <Crown className="mx-auto mb-4 h-14 w-14 text-accent" />
       <h1 className="page-title">Upgrade to Premium</h1>
       <p className="text-muted-foreground mb-8">Get the best tools to find your pet faster.</p>
