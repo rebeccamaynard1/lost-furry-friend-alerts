@@ -137,9 +137,18 @@ export default function ReportFoundPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-lg font-heading">Photos</CardTitle></CardHeader>
-          <CardContent>
+        <Card>
+          <CardHeader><CardTitle className="text-lg font-heading">Photos & Video</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
             <PhotoUpload photos={photos} onPhotosChange={setPhotos} userId={user?.id} label="Upload photos of the found pet" />
+            <div className="space-y-2">
+              <Label>Video URL (optional)</Label>
+              <Input
+                placeholder="YouTube, Vimeo, or any video link"
+                value={formData.video}
+                onChange={(e) => handleChange("video", e.target.value)}
+              />
+            </div>
           </CardContent>
         </Card>
 
