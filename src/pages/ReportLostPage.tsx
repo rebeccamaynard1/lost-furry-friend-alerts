@@ -23,6 +23,7 @@ export default function ReportLostPage() {
     petName: "", species: "", breed: "", color: "", age: "",
     gender: "", microchip: "", dateLost: "", description: "",
     contactName: "", contactPhone: "", contactEmail: "", lastSeenAddress: "",
+    video: "",
   });
 
   const handleChange = (field: string, value: string) => {
@@ -46,6 +47,8 @@ export default function ReportLostPage() {
       return "A valid phone number is required.";
     if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail))
       return "Please enter a valid email address.";
+    if (formData.video && !/^https?:\/\//i.test(formData.video.trim()))
+      return "Video must be a valid URL starting with http(s)://";
     return null;
   };
 
@@ -83,6 +86,7 @@ export default function ReportLostPage() {
       last_seen_lat,
       last_seen_lng,
       photos: photos.length > 0 ? photos : null,
+      video: formData.video.trim() || null,
     }).select().single();
 
     if (error) { toast.error("Failed to submit: " + error.message); setLoading(false); return; }
