@@ -663,6 +663,22 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_profile_display_name: {
+        Args: { _user_id: string }
+        Returns: {
+          name: string
+          profile_photo: string
+          user_id: string
+        }[]
+      }
+      get_profile_display_names: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          name: string
+          profile_photo: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

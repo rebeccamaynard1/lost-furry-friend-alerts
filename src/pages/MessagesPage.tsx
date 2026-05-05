@@ -43,9 +43,9 @@ export default function MessagesPage() {
     if (!user) return;
     const toUserId = searchParams.get("to");
     if (toUserId && toUserId !== user.id) {
-      supabase.from("profiles").select("name, email").eq("user_id", toUserId).single().then(({ data }) => {
+      supabase.rpc("get_profile_display_name", { _user_id: toUserId }).then(({ data }) => {
         setSelectedUser(toUserId);
-        setSelectedName(data?.name || data?.email || "User");
+        setSelectedName(data?.[0]?.name || "User");
       });
     }
   }, [user, searchParams]);
@@ -71,10 +71,10 @@ export default function MessagesPage() {
 
       const otherIds = Array.from(convMap.keys());
       const { data: profiles } = otherIds.length > 0
-        ? await supabase.from("profiles").select("user_id, name, email").in("user_id", otherIds)
+        ? await supabase.rpc("get_profile_display_names", { _user_ids: otherIds })
         : { data: [] };
 
-      const profileMap = new Map((profiles || []).map((p) => [p.user_id, p.name || p.email || "Unknown"]));
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p.name || "Unknown"]));
 
       const convs: Conversation[] = otherIds.map((uid) => {
         const msgs = convMap.get(uid)!.msgs;
