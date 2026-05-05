@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Megaphone, Globe, Crown, Loader2, Plus } from "lucide-react";
@@ -9,6 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import SEO from "@/components/SEO";
+import Pagination from "@/components/Pagination";
+
+const SPONSOR_PAGE_SIZE = 12;
 
 type Sponsor = {
   id: string;
@@ -40,6 +44,8 @@ export default function SponsorsPage() {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ business_name: "", website: "", tier: "bronze", email: "" });
+  const [tierFilter, setTierFilter] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     supabase.from("sponsors").select("id, business_name, logo, website, tier, email").eq("approved", true).order("created_at").then(({ data }) => {
@@ -68,8 +74,16 @@ export default function SponsorsPage() {
     setSubmitting(false);
   };
 
+  const filteredSponsors = useMemo(
+    () => (tierFilter ? sponsors.filter((s) => s.tier === tierFilter) : sponsors),
+    [sponsors, tierFilter]
+  );
+  useEffect(() => { setPage(1); }, [tierFilter]);
+  const pagedSponsors = filteredSponsors.slice((page - 1) * SPONSOR_PAGE_SIZE, page * SPONSOR_PAGE_SIZE);
+
   return (
     <div className="page-container">
+      <SEO title="Our Sponsors — Lost Furry Friend Alerts" description="Businesses helping pets get home. Become a sponsor and support our nationwide pet recovery network." />
       <div className="flex items-center justify-between mb-6">
         <h1 className="page-title mb-0"><Megaphone className="inline h-7 w-7 text-accent mr-2" />Our Sponsors</h1>
         <Dialog open={open} onOpenChange={setOpen}>
