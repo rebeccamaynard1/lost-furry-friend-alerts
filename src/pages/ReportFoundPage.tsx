@@ -137,7 +137,6 @@ export default function ReportFoundPage() {
         </Card>
 
         <Card>
-        <Card>
           <CardHeader><CardTitle className="text-lg font-heading">Photos & Video</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <PhotoUpload photos={photos} onPhotosChange={setPhotos} userId={user?.id} label="Upload photos of the found pet" />
