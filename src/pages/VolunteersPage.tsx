@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
 import Pagination from "@/components/Pagination";
+import CountyPicker from "@/components/CountyPicker";
 
 type Volunteer = {
   id: string;
