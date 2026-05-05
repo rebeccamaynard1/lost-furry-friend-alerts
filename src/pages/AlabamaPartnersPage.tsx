@@ -136,15 +136,35 @@ export default function AlabamaPartnersPage() {
     }
   };
 
-  const filtered = partners.filter((p) => {
-    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) ||
-      (p.county && p.county.toLowerCase().includes(search.toLowerCase()));
-    const matchType = !typeFilter || p.type === typeFilter;
-    return matchSearch && matchType;
-  });
+  const counties = useMemo(() => {
+    const set = new Set<string>();
+    partners.forEach((p) => { if (p.county) set.add(p.county); });
+    return Array.from(set).sort();
+  }, [partners]);
+
+  const filtered = useMemo(() => {
+    let list = partners.filter((p) => {
+      const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) ||
+        (p.county && p.county.toLowerCase().includes(search.toLowerCase()));
+      const matchType = !typeFilter || p.type === typeFilter;
+      const matchCounty = !countyFilter || p.county === countyFilter;
+      return matchSearch && matchType && matchCounty;
+    });
+    list = [...list].sort((a, b) => {
+      if (sortOrder === "county") {
+        return (a.county || "").localeCompare(b.county || "") || a.name.localeCompare(b.name);
+      }
+      return a.name.localeCompare(b.name);
+    });
+    return list;
+  }, [partners, search, typeFilter, countyFilter, sortOrder]);
+
+  useEffect(() => { setPage(1); }, [search, typeFilter, countyFilter, sortOrder]);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="page-container">
+      <SEO title="Alabama Pet Partners — Lost Furry Friend Alerts" description="Directory of Alabama rescues, vets, shelters, hospitals, and animal control to help find lost pets." />
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="page-title mb-0">
           <Building2 className="inline h-7 w-7 text-primary mr-2" />
@@ -197,6 +217,24 @@ export default function AlabamaPartnersPage() {
             <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
           ))}
         </select>
+        <select
+          className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
+          value={countyFilter}
+          onChange={(e) => setCountyFilter(e.target.value)}
+        >
+          <option value="">All Counties</option>
+          {counties.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select
+          className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as "name" | "county")}
+        >
+          <option value="name">Sort: Name</option>
+          <option value="county">Sort: County</option>
+        </select>
       </div>
 
       {loading ? (
@@ -213,8 +251,9 @@ export default function AlabamaPartnersPage() {
           </CardContent>
         </Card>
       ) : (
+        <>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((p) => (
+          {paged.map((p) => (
             <Card key={p.id} className="card-hover">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-2">
