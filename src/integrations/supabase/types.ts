@@ -383,6 +383,7 @@ export type Database = {
           home_address: string | null
           id: string
           name: string
+          notification_prefs: Json
           phone: string | null
           profile_photo: string | null
           state: string | null
@@ -398,6 +399,7 @@ export type Database = {
           home_address?: string | null
           id?: string
           name?: string
+          notification_prefs?: Json
           phone?: string | null
           profile_photo?: string | null
           state?: string | null
@@ -413,6 +415,7 @@ export type Database = {
           home_address?: string | null
           id?: string
           name?: string
+          notification_prefs?: Json
           phone?: string | null
           profile_photo?: string | null
           state?: string | null
