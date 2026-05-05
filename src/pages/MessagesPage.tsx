@@ -191,6 +191,11 @@ export default function MessagesPage() {
           <span className="font-heading font-bold text-foreground">{selectedName}</span>
         </div>
         <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+          {hasMore && (
+            <div className="flex justify-center pb-2">
+              <Button variant="ghost" size="sm" onClick={loadOlderMessages}>Load older messages</Button>
+            </div>
+          )}
           {messages.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-8">No messages yet. Say hello!</p>
           )}
