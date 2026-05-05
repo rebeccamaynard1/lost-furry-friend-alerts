@@ -10,6 +10,7 @@ import logo from "@/assets/littlefoot-logo-1.webp";
 import { supabase } from "@/integrations/supabase/client";
 import SpotlightSection from "@/components/SpotlightSection";
 import MemorialFooter from "@/components/MemorialFooter";
+import SEO from "@/components/SEO";
 
 const quickActions = [
   { title: "Report Lost Pet", description: "File a report immediately to alert your community", icon: AlertTriangle, path: "/report-lost", color: "bg-lost/10 text-lost", iconColor: "text-lost" },
@@ -44,6 +45,10 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+      <SEO
+        title="Lost Furry Friend Alerts — Pet Recovery Network"
+        description="Nationwide lost and found pet recovery. Report lost pets, found pets, and sightings. Free for families."
+      />
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-secondary to-primary/10 py-12 sm:py-20">
         <div className="page-container text-center">
