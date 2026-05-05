@@ -94,7 +94,9 @@ export default function MessagesPage() {
     load();
   }, [user]);
 
-  // Fetch messages for selected conversation
+  // Fetch messages for selected conversation (paginated, newest 50)
+  const PAGE_SIZE = 50;
+  const [hasMore, setHasMore] = useState(false);
   useEffect(() => {
     if (!selectedUser || !user) return;
     async function loadMsgs() {
@@ -102,8 +104,11 @@ export default function MessagesPage() {
         .from("messages")
         .select("*")
         .or(`and(sender_id.eq.${user!.id},receiver_id.eq.${selectedUser}),and(sender_id.eq.${selectedUser},receiver_id.eq.${user!.id})`)
-        .order("created_at", { ascending: true });
-      setMessages(data || []);
+        .order("created_at", { ascending: false })
+        .limit(PAGE_SIZE + 1);
+      const rows = (data || []).slice(0, PAGE_SIZE).reverse();
+      setHasMore((data || []).length > PAGE_SIZE);
+      setMessages(rows);
 
       await supabase
         .from("messages")
@@ -114,6 +119,21 @@ export default function MessagesPage() {
     }
     loadMsgs();
   }, [selectedUser, user]);
+
+  const loadOlderMessages = async () => {
+    if (!selectedUser || !user || messages.length === 0) return;
+    const oldest = messages[0].created_at;
+    const { data } = await supabase
+      .from("messages")
+      .select("*")
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${selectedUser}),and(sender_id.eq.${selectedUser},receiver_id.eq.${user.id})`)
+      .lt("created_at", oldest)
+      .order("created_at", { ascending: false })
+      .limit(PAGE_SIZE + 1);
+    const rows = (data || []).slice(0, PAGE_SIZE).reverse();
+    setHasMore((data || []).length > PAGE_SIZE);
+    setMessages((prev) => [...rows, ...prev]);
+  };
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -171,6 +191,11 @@ export default function MessagesPage() {
           <span className="font-heading font-bold text-foreground">{selectedName}</span>
         </div>
         <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+          {hasMore && (
+            <div className="flex justify-center pb-2">
+              <Button variant="ghost" size="sm" onClick={loadOlderMessages}>Load older messages</Button>
+            </div>
+          )}
           {messages.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-8">No messages yet. Say hello!</p>
           )}

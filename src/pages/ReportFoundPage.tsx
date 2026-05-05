@@ -27,9 +27,20 @@ export default function ReportFoundPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const validate = (): string | null => {
+    if (!formData.species) return "Please select a species.";
+    if (!formData.color.trim()) return "Color is required.";
+    if (!formData.dateFound) return "Date found is required.";
+    if (new Date(formData.dateFound) > new Date()) return "Date found cannot be in the future.";
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) { toast.error("Please sign in to report a found pet."); navigate("/login"); return; }
+
+    const err = validate();
+    if (err) { toast.error(err); return; }
 
     setLoading(true);
     // Geocode the address
@@ -40,16 +51,18 @@ export default function ReportFoundPage() {
       if (coords) {
         found_lat = coords.lat;
         found_lng = coords.lng;
+      } else {
+        toast.warning("Couldn't pinpoint that address on the map — report saved without coordinates.");
       }
     }
 
     const { data, error } = await supabase.from("found_pets").insert({
       user_id: user.id, species: formData.species,
-      breed: formData.breed || null, color: formData.color,
+      breed: formData.breed.trim() || null, color: formData.color.trim(),
       date_found: formData.dateFound,
-      holding_location: formData.holdingLocation || null,
-      description: formData.description || null,
-      found_address: formData.foundAddress || null,
+      holding_location: formData.holdingLocation.trim() || null,
+      description: formData.description.trim() || null,
+      found_address: formData.foundAddress.trim() || null,
       found_lat,
       found_lng,
       photos: photos.length > 0 ? photos : null,

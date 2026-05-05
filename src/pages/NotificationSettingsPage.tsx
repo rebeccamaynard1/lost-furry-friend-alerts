@@ -10,24 +10,69 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
+type Prefs = {
+  lost_nearby: boolean;
+  found_nearby: boolean;
+  sighting_nearby: boolean;
+  pet_match: boolean;
+  new_message: boolean;
+  approval: boolean;
+};
+
+const DEFAULT_PREFS: Prefs = {
+  lost_nearby: true,
+  found_nearby: true,
+  sighting_nearby: true,
+  pet_match: true,
+  new_message: true,
+  approval: true,
+};
+
+const PREF_LABELS: { key: keyof Prefs; label: string }[] = [
+  { key: "lost_nearby", label: "Lost pet near you" },
+  { key: "found_nearby", label: "Found pet near you" },
+  { key: "sighting_nearby", label: "Sighting near you" },
+  { key: "pet_match", label: "Match found for your pet" },
+  { key: "new_message", label: "New message received" },
+  { key: "approval", label: "Shelter/Volunteer approval" },
+];
+
 export default function NotificationSettingsPage() {
   const { user, isPremium } = useAuth();
   const [radius, setRadius] = useState(5);
+  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
-    supabase.from("profiles").select("alert_radius_miles").eq("user_id", user.id).single().then(({ data }) => {
-      if (data) setRadius(data.alert_radius_miles || 5);
-      setLoading(false);
-    });
+    supabase
+      .from("profiles")
+      .select("alert_radius_miles, notification_prefs")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setRadius(data.alert_radius_miles || 5);
+          if (data.notification_prefs) {
+            setPrefs({ ...DEFAULT_PREFS, ...(data.notification_prefs as Partial<Prefs>) });
+          }
+        }
+        setLoading(false);
+      });
   }, [user]);
+
+  const togglePref = (key: keyof Prefs) => {
+    setPrefs((p) => ({ ...p, [key]: !p[key] }));
+  };
 
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({ alert_radius_miles: radius }).eq("user_id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ alert_radius_miles: radius, notification_prefs: prefs })
+      .eq("user_id", user.id);
     if (error) toast.error(error.message);
     else toast.success("Notification settings saved!");
     setSaving(false);
@@ -84,17 +129,14 @@ export default function NotificationSettingsPage() {
         <Card>
           <CardHeader><CardTitle className="font-heading text-lg">Alert Types</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            {[
-              { label: "Lost pet near you", defaultOn: true },
-              { label: "Found pet near you", defaultOn: true },
-              { label: "Sighting near you", defaultOn: true },
-              { label: "Match found for your pet", defaultOn: true },
-              { label: "New message received", defaultOn: true },
-              { label: "Shelter/Volunteer approval", defaultOn: true },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between">
-                <Label className="text-sm text-foreground">{item.label}</Label>
-                <Switch defaultChecked={item.defaultOn} />
+            {PREF_LABELS.map(({ key, label }) => (
+              <div key={key} className="flex items-center justify-between">
+                <Label htmlFor={`pref-${key}`} className="text-sm text-foreground cursor-pointer">{label}</Label>
+                <Switch
+                  id={`pref-${key}`}
+                  checked={prefs[key]}
+                  onCheckedChange={() => togglePref(key)}
+                />
               </div>
             ))}
           </CardContent>
