@@ -20,7 +20,7 @@ export default function ReportFoundPage() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     species: "", breed: "", color: "", dateFound: "",
-    holdingLocation: "", description: "", foundAddress: "",
+    holdingLocation: "", description: "", foundAddress: "", video: "",
   });
 
   const handleChange = (field: string, value: string) => {
@@ -32,6 +32,8 @@ export default function ReportFoundPage() {
     if (!formData.color.trim()) return "Color is required.";
     if (!formData.dateFound) return "Date found is required.";
     if (new Date(formData.dateFound) > new Date()) return "Date found cannot be in the future.";
+    if (formData.video && !/^https?:\/\//i.test(formData.video.trim()))
+      return "Video must be a valid URL starting with http(s)://";
     return null;
   };
 
@@ -66,6 +68,7 @@ export default function ReportFoundPage() {
       found_lat,
       found_lng,
       photos: photos.length > 0 ? photos : null,
+      video: formData.video.trim() || null,
     }).select().single();
 
     if (error) { toast.error("Failed to submit: " + error.message); setLoading(false); return; }
