@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import logo from "@/assets/littlefoot-logo-1.webp";
 
 export default function MemorialFooter() {
@@ -11,6 +12,12 @@ export default function MemorialFooter() {
         <p className="text-xs text-muted-foreground mt-1">
           © {new Date().getFullYear()} Lost Furry Friend Alerts. All rights reserved.
         </p>
+        <nav className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs">
+          <Link to="/terms" className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline">Terms</Link>
+          <Link to="/privacy" className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline">Privacy</Link>
+          <Link to="/help" className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline">Help</Link>
+          <Link to="/donate" className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline">Donate</Link>
+        </nav>
       </div>
     </footer>
   );
