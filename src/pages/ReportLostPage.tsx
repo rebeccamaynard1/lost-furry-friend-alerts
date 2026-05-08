@@ -142,7 +142,7 @@ export default function ReportLostPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div className="text-center">
-          <a href="https://buy.stripe.com/4gMdR89r58Ee3wY2bv0Ny01" target="_blank" rel="noopener noreferrer">
+          <a href="https://buy.stripe.com/9B628qbzdg6G7Ne9DX0Ny03" target="_blank" rel="noopener noreferrer">
             <Button type="button" variant="lost" size="lg" className="w-full rounded-xl py-6 text-lg font-bold">
               🔔 $10 Lost Pet Alert
             </Button>
@@ -150,7 +150,7 @@ export default function ReportLostPage() {
           <p className="text-xs text-muted-foreground mt-2">Standard alert sent to nearby users.</p>
         </div>
         <div className="text-center">
-          <a href="https://buy.stripe.com/4gMfZgbzd2fQ2sUeYh0Ny02" target="_blank" rel="noopener noreferrer">
+          <a href="https://buy.stripe.com/3cI9AS8n15s24B2aI10Ny04" target="_blank" rel="noopener noreferrer">
             <Button type="button" size="lg" className="w-full rounded-xl py-6 text-lg font-bold bg-accent text-accent-foreground hover:bg-accent/90 shadow-md">
               🚀 $20 Boosted Alert
             </Button>
