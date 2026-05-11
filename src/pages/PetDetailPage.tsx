@@ -87,15 +87,6 @@ export default function PetDetailPage() {
     }
   };
 
-  const handleShare = () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      navigator.share({ title: `${petType === "found" ? "Found" : "Lost"} Pet: ${pet?.pet_name || pet?.species}`, url });
-    } else {
-      navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard!");
-    }
-  };
 
   if (loading) {
     return (
