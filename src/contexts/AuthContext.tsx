@@ -2,12 +2,18 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
+export type AppRole = "user" | "shelter" | "volunteer" | "rural_partner" | "sponsor" | "admin";
+
 interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
   isPremium: boolean;
   subscriptionEnd: string | null;
+  roles: AppRole[];
+  hasRole: (role: AppRole) => boolean;
+  isAdmin: boolean;
+  refreshRoles: () => Promise<void>;
   checkSubscription: () => Promise<void>;
 }
 
@@ -17,6 +23,10 @@ const AuthContext = createContext<AuthState>({
   loading: true,
   isPremium: false,
   subscriptionEnd: null,
+  roles: [],
+  hasRole: () => false,
+  isAdmin: false,
+  refreshRoles: async () => {},
   checkSubscription: async () => {},
 });
 
@@ -28,6 +38,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const [roles, setRoles] = useState<AppRole[]>([]);
+
+  const refreshRoles = useCallback(async () => {
+    if (!session?.user) {
+      setRoles([]);
+      return;
+    }
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id);
+    if (!error && data) setRoles(data.map((r: any) => r.role as AppRole));
+  }, [session]);
 
   const checkSubscription = useCallback(async () => {
     if (!session) {
@@ -65,8 +88,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!session?.user) return;
+    if (!session?.user) {
+      setRoles([]);
+      return;
+    }
     checkSubscription();
+    refreshRoles();
+
+    // Claim a requested role from signup metadata (after email verification / first login)
+    const requested = (session.user.user_metadata as any)?.requested_role as AppRole | undefined;
+    if (requested && requested !== "user" && requested !== "admin") {
+      supabase
+        .from("user_roles")
+        .insert({ user_id: session.user.id, role: requested })
+        .then(({ error }) => {
+          if (!error) refreshRoles();
+        });
+    }
 
     // Realtime: listen for profile updates from Stripe webhook
     const channel = supabase
@@ -85,10 +123,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Fallback poll every 5 minutes (in case realtime drops)
     const interval = setInterval(checkSubscription, 5 * 60 * 1000);
     return () => { supabase.removeChannel(channel); clearInterval(interval); };
-  }, [session, checkSubscription]);
+  }, [session, checkSubscription, refreshRoles]);
+
+  const hasRole = useCallback((role: AppRole) => roles.includes(role), [roles]);
+  const isAdmin = roles.includes("admin");
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isPremium, subscriptionEnd, checkSubscription }}>
+    <AuthContext.Provider value={{ user, session, loading, isPremium, subscriptionEnd, roles, hasRole, isAdmin, refreshRoles, checkSubscription }}>
       {children}
     </AuthContext.Provider>
   );

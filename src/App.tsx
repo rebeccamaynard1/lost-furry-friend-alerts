@@ -34,6 +34,7 @@ import TermsPage from "@/pages/TermsPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import NotFound from "@/pages/NotFound";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import RoleGuard from "@/components/RoleGuard";
 
 const queryClient = new QueryClient();
 
@@ -52,16 +53,16 @@ const App = () => (
               <Route path="/report-found" element={<ReportFoundPage />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="/sightings" element={<SightingsPage />} />
-              <Route path="/messages" element={<MessagesPage />} />
-              <Route path="/my-pets" element={<MyPetsPage />} />
-              <Route path="/my-reports" element={<MyPetsPage />} />
+              <Route path="/messages" element={<RoleGuard allowed={[]} authOnly><MessagesPage /></RoleGuard>} />
+              <Route path="/my-pets" element={<RoleGuard allowed={[]} authOnly><MyPetsPage /></RoleGuard>} />
+              <Route path="/my-reports" element={<RoleGuard allowed={[]} authOnly><MyPetsPage /></RoleGuard>} />
               <Route path="/shelters" element={<SheltersPage />} />
               <Route path="/volunteers" element={<VolunteersPage />} />
-              <Route path="/rural-partners" element={<RuralPartnersPage />} />
+              <Route path="/rural-partners" element={<RoleGuard allowed={["rural_partner"]}><RuralPartnersPage /></RoleGuard>} />
               <Route path="/sponsors" element={<SponsorsPage />} />
               <Route path="/donate" element={<DonatePage />} />
               <Route path="/premium" element={<PremiumPage />} />
-              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin" element={<RoleGuard allowed={["admin"]}><AdminPage /></RoleGuard>} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/payment-success" element={<PaymentSuccessPage />} />
