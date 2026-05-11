@@ -229,30 +229,40 @@ export default function PetDetailPage() {
               Print a flyer with photo, details, contact info, and this QR code.
             </p>
           </div>
-          <Button
-            variant="hero"
-            onClick={() =>
-              openFlyer({
-                isLost,
-                petName: displayName,
-                species: pet.species,
-                breed: pet.breed,
-                color: pet.color,
-                age: pet.age,
-                gender: pet.gender,
-                description: pet.description,
-                address: address,
-                date: dateValue ? format(new Date(dateValue), "MMMM d, yyyy") : undefined,
-                contactName: pet.contact_name,
-                contactPhone: pet.contact_phone,
-                contactEmail: pet.contact_email,
-                photoUrl: pet.photos?.[0],
-                pageUrl: window.location.href,
-              })
-            }
-          >
-            <Printer className="h-4 w-4 mr-2" /> Download Flyer (PDF)
-          </Button>
+          <div className="flex flex-col gap-2">
+            {(["en", "es", "bilingual"] as const).map((lang) => (
+              <Button
+                key={lang}
+                variant={lang === "en" ? "hero" : "outline"}
+                size="sm"
+                onClick={() =>
+                  openFlyer({
+                    isLost,
+                    petName: displayName,
+                    species: pet.species,
+                    breed: pet.breed,
+                    color: pet.color,
+                    age: pet.age,
+                    gender: pet.gender,
+                    description: pet.description,
+                    address: address,
+                    date: dateValue ? format(new Date(dateValue), "MMMM d, yyyy") : undefined,
+                    contactName: pet.contact_name,
+                    contactPhone: pet.contact_phone,
+                    contactEmail: pet.contact_email,
+                    photoUrl: pet.photos?.[0],
+                    pageUrl: window.location.href,
+                    lang,
+                  })
+                }
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                {lang === "en" && "Flyer (PDF) — English"}
+                {lang === "es" && "Volante (PDF) — Español"}
+                {lang === "bilingual" && "Bilingual Flyer (EN/ES)"}
+              </Button>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
