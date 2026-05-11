@@ -5,14 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import logo from "@/assets/littlefoot-logo-1.webp";
+import type { AppRole } from "@/contexts/AuthContext";
+
+const ROLE_OPTIONS: { value: Exclude<AppRole, "admin">; label: string; description: string }[] = [
+  { value: "user", label: "General User", description: "Report lost/found pets and get alerts" },
+  { value: "shelter", label: "Shelter / Rescue", description: "Manage intake and adoption listings" },
+  { value: "volunteer", label: "Volunteer", description: "Help with searches and outreach" },
+  { value: "rural_partner", label: "Rural Partner", description: "Trail cam uploads and rural search" },
+  { value: "sponsor", label: "Business Sponsor", description: "Sponsor alerts and support the mission" },
+];
 
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [role, setRole] = useState<Exclude<AppRole, "admin">>("user");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -23,18 +34,34 @@ export default function SignupPage() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, phone } },
+      options: {
+        data: { name, phone, requested_role: role },
+        emailRedirectTo: `${window.location.origin}/`,
+      },
     });
-    setLoading(false);
+
     if (error) {
+      setLoading(false);
       toast.error(error.message);
-    } else {
-      toast.success("Account created! Please check your email to verify your account.");
-      navigate("/login");
+      return;
     }
+
+    // If a session is returned (auto-confirm) and user picked a non-default role, claim it now.
+    if (role !== "user" && data.session?.user) {
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .insert({ user_id: data.session.user.id, role });
+      if (roleError && !roleError.message.includes("duplicate")) {
+        console.error("Role claim failed:", roleError);
+      }
+    }
+
+    setLoading(false);
+    toast.success("Account created! Please check your email to verify your account.");
+    navigate("/login", { state: { pendingRole: role !== "user" ? role : undefined } });
   };
 
   return (
@@ -62,6 +89,23 @@ export default function SignupPage() {
             <div className="space-y-2">
               <Label htmlFor="password">Password *</Label>
               <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">I am signing up as *</Label>
+              <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
+                <SelectTrigger id="role"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ROLE_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      <div className="flex flex-col text-left">
+                        <span className="font-medium">{o.label}</span>
+                        <span className="text-xs text-muted-foreground">{o.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Admin access is granted manually by site administrators.</p>
             </div>
             <Button type="submit" variant="hero" size="lg" className="w-full rounded-xl" disabled={loading}>
               {loading ? "Creating account..." : "Sign Up"}
