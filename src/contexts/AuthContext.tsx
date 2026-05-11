@@ -38,6 +38,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const [roles, setRoles] = useState<AppRole[]>([]);
+
+  const refreshRoles = useCallback(async () => {
+    if (!session?.user) {
+      setRoles([]);
+      return;
+    }
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id);
+    if (!error && data) setRoles(data.map((r: any) => r.role as AppRole));
+  }, [session]);
 
   const checkSubscription = useCallback(async () => {
     if (!session) {
