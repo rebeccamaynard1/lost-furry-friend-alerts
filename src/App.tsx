@@ -34,6 +34,7 @@ import TermsPage from "@/pages/TermsPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import NotFound from "@/pages/NotFound";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import RoleGuard from "@/components/RoleGuard";
 
 const queryClient = new QueryClient();
 
