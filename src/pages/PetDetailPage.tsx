@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Calendar, MapPin, Phone, Mail, MessageCircle, Share2, Loader2, Dog, Cat } from "lucide-react";
 import { format } from "date-fns";
 import SEO from "@/components/SEO";
+import ShareButtons from "@/components/ShareButtons";
 
 type PetDetail = {
   id: string;
