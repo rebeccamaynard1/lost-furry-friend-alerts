@@ -147,9 +147,7 @@ export default function PetDetailPage() {
             {[pet.species, pet.breed, pet.color, pet.age, pet.gender].filter(Boolean).join(" · ")}
           </p>
         </div>
-        <Button variant="outline" size="icon" onClick={handleShare}>
-          <Share2 className="h-4 w-4" />
-        </Button>
+        <ShareButtons title={`${isLost ? "Lost" : "Found"} pet: ${displayName}${address ? ` near ${address}` : ""} — please help reunite!`} />
       </div>
 
       {/* Details */}
