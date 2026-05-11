@@ -220,11 +220,17 @@ export default function PetDetailPage() {
       {/* QR code for printable flyers */}
       <Card className="mb-4">
         <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4">
-          <div className="bg-white p-2 rounded-lg border border-border flex-shrink-0">
-            <QRCodeSVG value={typeof window !== "undefined" ? window.location.href : ""} size={96} level="M" />
+          <div className="flex flex-col items-center gap-1 flex-shrink-0">
+            <div className="bg-white p-2 rounded-lg border border-border">
+              <QRCodeSVG value={typeof window !== "undefined" ? window.location.href : ""} size={96} level="M" />
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center leading-tight max-w-[120px]">
+              Scan for full details<br />
+              <span className="italic">Escanea para más detalles</span>
+            </p>
           </div>
           <div className="text-sm flex-1 text-center sm:text-left">
-            <p className="font-semibold text-foreground mb-1">Scan to view this listing</p>
+            <p className="font-semibold text-foreground mb-1">Share this listing</p>
             <p className="text-muted-foreground text-xs">
               Print a flyer with photo, details, contact info, and this QR code.
             </p>
