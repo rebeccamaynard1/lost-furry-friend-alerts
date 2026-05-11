@@ -95,6 +95,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkSubscription();
     refreshRoles();
 
+    // Claim a requested role from signup metadata (after email verification / first login)
+    const requested = (session.user.user_metadata as any)?.requested_role as AppRole | undefined;
+    if (requested && requested !== "user" && requested !== "admin") {
+      supabase
+        .from("user_roles")
+        .insert({ user_id: session.user.id, role: requested })
+        .then(({ error }) => {
+          if (!error) refreshRoles();
+        });
+    }
+
     // Realtime: listen for profile updates from Stripe webhook
     const channel = supabase
       .channel(`profile-${session.user.id}`)
