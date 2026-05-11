@@ -144,12 +144,9 @@ export function openFlyer(d: FlyerData) {
       ? `${EN.contactTitle}<br><span style="font-size:.9em;font-weight:500">${ES.contactTitle}</span>`
       : t!.contactTitle;
 
-  const scanTitle =
-    lang === "bilingual" ? `${EN.scanTitle} / ${ES.scanTitle}` : t!.scanTitle;
-  const scanBody =
-    lang === "bilingual"
-      ? `${EN.scanBody}<br><span style="opacity:.8">${ES.scanBody}</span>`
-      : t!.scanBody;
+  // Scan caption is ALWAYS bilingual so anyone can use it.
+  const scanTitle = `${EN.scanTitle} / ${ES.scanTitle}`;
+  const scanBody = `${EN.scanBody}<br><span style="opacity:.8;font-style:italic">${ES.scanBody}</span>`;
   const printBtn = lang === "bilingual" ? `${EN.printBtn} / ${ES.printBtn}` : t!.printBtn;
   const notesLabel = lang === "bilingual" ? `${EN.notes} / ${ES.notes}` : t!.notes;
 
