@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Calendar, MapPin, Phone, Mail, MessageCircle, Share2, Loader2, Dog, Cat } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Phone, Mail, MessageCircle, Share2, Loader2, Dog, Cat, Printer } from "lucide-react";
 import { format } from "date-fns";
 import SEO from "@/components/SEO";
 import ShareButtons from "@/components/ShareButtons";
 import { QRCodeSVG } from "qrcode.react";
+import { openFlyer } from "@/lib/flyer";
 
 type PetDetail = {
   id: string;
@@ -218,16 +219,40 @@ export default function PetDetailPage() {
 
       {/* QR code for printable flyers */}
       <Card className="mb-4">
-        <CardContent className="p-4 flex items-center gap-4">
+        <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4">
           <div className="bg-white p-2 rounded-lg border border-border flex-shrink-0">
             <QRCodeSVG value={typeof window !== "undefined" ? window.location.href : ""} size={96} level="M" />
           </div>
-          <div className="text-sm">
+          <div className="text-sm flex-1 text-center sm:text-left">
             <p className="font-semibold text-foreground mb-1">Scan to view this listing</p>
             <p className="text-muted-foreground text-xs">
-              Print this QR code on flyers — anyone who scans it lands on this page with photos and contact info.
+              Print a flyer with photo, details, contact info, and this QR code.
             </p>
           </div>
+          <Button
+            variant="hero"
+            onClick={() =>
+              openFlyer({
+                isLost,
+                petName: displayName,
+                species: pet.species,
+                breed: pet.breed,
+                color: pet.color,
+                age: pet.age,
+                gender: pet.gender,
+                description: pet.description,
+                address: address,
+                date: dateValue ? format(new Date(dateValue), "MMMM d, yyyy") : undefined,
+                contactName: pet.contact_name,
+                contactPhone: pet.contact_phone,
+                contactEmail: pet.contact_email,
+                photoUrl: pet.photos?.[0],
+                pageUrl: window.location.href,
+              })
+            }
+          >
+            <Printer className="h-4 w-4 mr-2" /> Download Flyer (PDF)
+          </Button>
         </CardContent>
       </Card>
 
