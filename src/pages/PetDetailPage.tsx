@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Calendar, MapPin, Phone, Mail, MessageCircle, Share2, Loader2, Dog, Cat } from "lucide-react";
 import { format } from "date-fns";
 import SEO from "@/components/SEO";
+import ShareButtons from "@/components/ShareButtons";
 
 type PetDetail = {
   id: string;
@@ -87,15 +88,6 @@ export default function PetDetailPage() {
     }
   };
 
-  const handleShare = () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      navigator.share({ title: `${petType === "found" ? "Found" : "Lost"} Pet: ${pet?.pet_name || pet?.species}`, url });
-    } else {
-      navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard!");
-    }
-  };
 
   if (loading) {
     return (
@@ -156,9 +148,7 @@ export default function PetDetailPage() {
             {[pet.species, pet.breed, pet.color, pet.age, pet.gender].filter(Boolean).join(" · ")}
           </p>
         </div>
-        <Button variant="outline" size="icon" onClick={handleShare}>
-          <Share2 className="h-4 w-4" />
-        </Button>
+        <ShareButtons title={`${isLost ? "Lost" : "Found"} pet: ${displayName}${address ? ` near ${address}` : ""} — please help reunite!`} />
       </div>
 
       {/* Details */}
