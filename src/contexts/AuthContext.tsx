@@ -88,8 +88,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!session?.user) return;
+    if (!session?.user) {
+      setRoles([]);
+      return;
+    }
     checkSubscription();
+    refreshRoles();
 
     // Realtime: listen for profile updates from Stripe webhook
     const channel = supabase
@@ -108,10 +112,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Fallback poll every 5 minutes (in case realtime drops)
     const interval = setInterval(checkSubscription, 5 * 60 * 1000);
     return () => { supabase.removeChannel(channel); clearInterval(interval); };
-  }, [session, checkSubscription]);
+  }, [session, checkSubscription, refreshRoles]);
+
+  const hasRole = useCallback((role: AppRole) => roles.includes(role), [roles]);
+  const isAdmin = roles.includes("admin");
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isPremium, subscriptionEnd, checkSubscription }}>
+    <AuthContext.Provider value={{ user, session, loading, isPremium, subscriptionEnd, roles, hasRole, isAdmin, refreshRoles, checkSubscription }}>
       {children}
     </AuthContext.Provider>
   );
