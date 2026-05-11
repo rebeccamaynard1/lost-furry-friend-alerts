@@ -10,6 +10,7 @@ import { ArrowLeft, Calendar, MapPin, Phone, Mail, MessageCircle, Share2, Loader
 import { format } from "date-fns";
 import SEO from "@/components/SEO";
 import ShareButtons from "@/components/ShareButtons";
+import { QRCodeSVG } from "qrcode.react";
 
 type PetDetail = {
   id: string;
