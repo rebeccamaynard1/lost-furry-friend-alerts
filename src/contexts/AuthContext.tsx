@@ -2,12 +2,18 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
+export type AppRole = "user" | "shelter" | "volunteer" | "rural_partner" | "sponsor" | "admin";
+
 interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
   isPremium: boolean;
   subscriptionEnd: string | null;
+  roles: AppRole[];
+  hasRole: (role: AppRole) => boolean;
+  isAdmin: boolean;
+  refreshRoles: () => Promise<void>;
   checkSubscription: () => Promise<void>;
 }
 
@@ -17,6 +23,10 @@ const AuthContext = createContext<AuthState>({
   loading: true,
   isPremium: false,
   subscriptionEnd: null,
+  roles: [],
+  hasRole: () => false,
+  isAdmin: false,
+  refreshRoles: async () => {},
   checkSubscription: async () => {},
 });
 
