@@ -10,6 +10,7 @@ import { ArrowLeft, Calendar, MapPin, Phone, Mail, MessageCircle, Share2, Loader
 import { format } from "date-fns";
 import SEO from "@/components/SEO";
 import ShareButtons from "@/components/ShareButtons";
+import { QRCodeSVG } from "qrcode.react";
 
 type PetDetail = {
   id: string;
@@ -214,6 +215,21 @@ export default function PetDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* QR code for printable flyers */}
+      <Card className="mb-4">
+        <CardContent className="p-4 flex items-center gap-4">
+          <div className="bg-white p-2 rounded-lg border border-border flex-shrink-0">
+            <QRCodeSVG value={typeof window !== "undefined" ? window.location.href : ""} size={96} level="M" />
+          </div>
+          <div className="text-sm">
+            <p className="font-semibold text-foreground mb-1">Scan to view this listing</p>
+            <p className="text-muted-foreground text-xs">
+              Print this QR code on flyers — anyone who scans it lands on this page with photos and contact info.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <p className="text-xs text-muted-foreground text-center">
         Reported on {format(new Date(pet.created_at), "MMMM d, yyyy 'at' h:mm a")}
