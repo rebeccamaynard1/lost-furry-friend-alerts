@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Calendar, MapPin, Phone, Mail, MessageCircle, Share2, Loader2, Dog, Cat } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Phone, Mail, MessageCircle, Share2, Loader2, Dog, Cat, Printer } from "lucide-react";
 import { format } from "date-fns";
 import SEO from "@/components/SEO";
 import ShareButtons from "@/components/ShareButtons";
 import { QRCodeSVG } from "qrcode.react";
+import { openFlyer } from "@/lib/flyer";
 
 type PetDetail = {
   id: string;
