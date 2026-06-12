@@ -65,14 +65,25 @@ export default function PetDetailPage() {
       } else {
         const { data, error } = await supabase
           .from("lost_pets")
-          .select("id, pet_name, species, breed, color, age, gender, microchip, date_lost, last_seen_address, description, photos, contact_name, contact_phone, contact_email, status, user_id, created_at")
+          .select("id, pet_name, species, breed, color, age, gender, microchip, date_lost, last_seen_address, description, photos, status, user_id, created_at")
           .eq("id", id)
           .single();
         if (error || !data) {
           toast.error("Pet not found");
           navigate("/");
         } else {
-          setPet(data as PetDetail);
+          // RLS returns a row only to the pet owner (or admins)
+          const { data: contact } = await supabase
+            .from("lost_pet_contacts")
+            .select("contact_name, contact_phone, contact_email")
+            .eq("pet_id", id)
+            .maybeSingle();
+          setPet({
+            ...(data as PetDetail),
+            contact_name: contact?.contact_name,
+            contact_phone: contact?.contact_phone,
+            contact_email: contact?.contact_email ?? null,
+          });
         }
       }
       setLoading(false);
