@@ -24,6 +24,7 @@ import SignupPage from "@/pages/SignupPage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import HelpPage from "@/pages/HelpPage";
 import NotificationSettingsPage from "@/pages/NotificationSettingsPage";
+import NotificationsCenterPage from "@/pages/NotificationsCenterPage";
 import AlabamaPartnersPage from "@/pages/AlabamaPartnersPage";
 import ProfileSettingsPage from "@/pages/ProfileSettingsPage";
 import UnsubscribePage from "@/pages/UnsubscribePage";
@@ -68,7 +69,7 @@ const App = () => (
               <Route path="/payment-success" element={<PaymentSuccessPage />} />
               <Route path="/donation-success" element={<PaymentSuccessPage />} />
               <Route path="/help" element={<HelpPage />} />
-              <Route path="/notification-settings" element={<NotificationSettingsPage />} />
+              <Route path="/notifications" element={<RoleGuard allowed={[]} authOnly><NotificationsCenterPage /></RoleGuard>} />
               <Route path="/alabama-partners" element={<AlabamaPartnersPage />} />
               <Route path="/profile" element={<ProfileSettingsPage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />

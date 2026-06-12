@@ -83,11 +83,16 @@ export default function NotificationBell() {
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-3 border-b border-border">
           <h3 className="font-heading font-bold text-sm text-foreground">Notifications</h3>
-          {unreadCount > 0 && (
-            <Button variant="ghost" size="sm" className="text-xs" onClick={markAllRead}>
-              Mark all read
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <Button variant="ghost" size="sm" className="text-xs" onClick={markAllRead}>
+                Mark all read
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <Link to="/notifications">View all</Link>
             </Button>
-          )}
+          </div>
         </div>
         <ScrollArea className="max-h-80">
           {notifications.length === 0 ? (
