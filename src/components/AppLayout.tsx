@@ -31,7 +31,7 @@ const navItems = [
   { path: "/donate", label: "Donate", icon: Heart },
   { path: "/premium", label: "Upgrade to Premium", icon: Crown },
   { path: "/notification-settings", label: "Notification Settings", icon: Bell },
-  { path: "/notifications", label: "Notifications Center", icon: Bell },
+  { path: "/notifications", label: "Notifications Center", icon: Inbox },
   { path: "/help", label: "Help & Guides", icon: HelpCircle },
   { path: "/admin", label: "Admin Dashboard", icon: LayoutDashboard },
 ];
