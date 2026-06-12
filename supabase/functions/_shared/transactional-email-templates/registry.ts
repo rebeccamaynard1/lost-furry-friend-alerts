@@ -10,7 +10,9 @@ export interface TemplateEntry {
 }
 
 import { template as lostPetAlert } from './lost-pet-alert.tsx'
+import { template as boostExpiry } from './boost-expiry.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'lost-pet-alert': lostPetAlert,
+  'boost-expiry': boostExpiry,
 }
