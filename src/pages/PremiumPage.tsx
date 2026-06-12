@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Crown, Check, Zap, Star, Settings } from "lucide-react";
+import { Crown, Check, Zap, Star, Settings, Rocket, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -21,11 +21,60 @@ const features = [
 
 const PREMIUM_PRICE_ID = "price_1ThR8wCn19AGQAKoFPzPYQXh";
 
+const BOOSTS = [
+  {
+    id: "standard",
+    name: "Alert Boost — Standard",
+    price: "$10",
+    priceId: "price_1ThR93Cn19AGQAKo7L2lYlna",
+    icon: TrendingUp,
+    description: "One-time boost to push your lost pet report to the top of search and alert feeds.",
+    perks: [
+      "Top placement for 3 days",
+      "Wider 15-mile alert radius",
+      "Highlighted listing card",
+    ],
+  },
+  {
+    id: "extended",
+    name: "Alert Boost — Extended",
+    price: "$20",
+    priceId: "price_1ThR94Cn19AGQAKomoFmagza",
+    icon: Rocket,
+    description: "Extended one-time boost with wider reach and longer top-of-feed placement.",
+    perks: [
+      "Top placement for 7 days",
+      "State-wide 25-mile alert radius",
+      "Featured on the home page",
+    ],
+  },
+];
+
 export default function PremiumPage() {
   const { user, isPremium, subscriptionEnd } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [boostLoading, setBoostLoading] = useState<string | null>(null);
+
+  const handleBuyBoost = async (priceId: string, id: string) => {
+    if (!user) {
+      toast.error("Please sign in first.");
+      navigate("/login");
+      return;
+    }
+    setBoostLoading(id);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { mode: "payment", priceId },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err: any) {
+      toast.error("Failed to start checkout: " + (err.message || "Unknown error"));
+    }
+    setBoostLoading(null);
+  };
 
   const handleSubscribe = async () => {
     if (!user) {
