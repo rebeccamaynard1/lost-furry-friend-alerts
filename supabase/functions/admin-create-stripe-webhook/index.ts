@@ -18,24 +18,21 @@ serve(async (req) => {
       "customer.subscription.deleted",
     ];
 
-    // Look for an existing endpoint
+    // Delete any existing endpoints matching this URL so we can create a fresh one
+    // with a known signing secret.
     const existing = await stripe.webhookEndpoints.list({ limit: 100 });
-    const match = existing.data.find((e) => e.url === url);
-
-    let endpoint;
-    if (match) {
-      endpoint = await stripe.webhookEndpoints.update(match.id, {
-        enabled_events: events,
-        description: "Lost Furry Friend Alerts — premium subscription sync",
-      });
-    } else {
-      endpoint = await stripe.webhookEndpoints.create({
-        url,
-        enabled_events: events,
-        description: "Lost Furry Friend Alerts — premium subscription sync",
-        api_version: "2025-08-27.basil",
-      });
+    for (const e of existing.data) {
+      if (e.url === url) {
+        await stripe.webhookEndpoints.del(e.id);
+      }
     }
+
+    const endpoint = await stripe.webhookEndpoints.create({
+      url,
+      enabled_events: events,
+      description: "Lost Furry Friend Alerts — premium subscription sync",
+      api_version: "2025-08-27.basil",
+    });
 
     return new Response(
       JSON.stringify({
