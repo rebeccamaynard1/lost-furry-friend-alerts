@@ -65,6 +65,24 @@ export default function PremiumPage() {
   const [loading, setLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [boostLoading, setBoostLoading] = useState<string | null>(null);
+  const [boosts, setBoosts] = useState<BoostRow[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setBoosts([]);
+      return;
+    }
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("alert_boosts")
+        .select("id, tier, radius_miles, duration_days, purchased_at, expires_at")
+        .eq("user_id", user.id)
+        .order("purchased_at", { ascending: false })
+        .limit(10);
+      if (!error && data) setBoosts(data as BoostRow[]);
+    };
+    load();
+  }, [user]);
 
   const handleBuyBoost = async (priceId: string, id: string) => {
     if (!user) {
