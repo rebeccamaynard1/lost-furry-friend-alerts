@@ -40,9 +40,8 @@ serve(async (req) => {
         url: endpoint.url,
         status: endpoint.status,
         enabled_events: endpoint.enabled_events,
-        secret: (endpoint as any).secret ?? null, // only present on create
+        secret: (endpoint as any).secret ?? null,
         livemode: endpoint.livemode,
-        reused_existing: !!match,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
