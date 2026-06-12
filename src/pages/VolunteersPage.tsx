@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, MapPin, Clock, Plus, Loader2, Wrench, Mail, Search } from "lucide-react";
+import { Users, MapPin, Clock, Plus, Loader2, Wrench, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,8 +15,6 @@ type Volunteer = {
   id: string;
   name: string;
   county: string | null;
-  phone: string | null;
-  email: string | null;
   skills: string | null;
   availability: string | null;
   created_at?: string;
@@ -37,7 +35,7 @@ export default function VolunteersPage() {
   const [page, setPage] = useState(1);
 
   const load = () => {
-    supabase.from("volunteers").select("*").order("created_at", { ascending: false }).then(({ data }) => {
+    supabase.rpc("get_public_volunteers").then(({ data }) => {
       setVolunteers((data as Volunteer[]) || []);
       setLoading(false);
     });
@@ -153,7 +151,6 @@ export default function VolunteersPage() {
                   </div>
                   <div className="space-y-1 text-sm text-muted-foreground">
                     {v.county && <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />{v.county}</p>}
-                    {v.email && <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />{v.email}</p>}
                     {v.availability && <p className="flex items-center gap-2"><Clock className="h-3.5 w-3.5" />{v.availability}</p>}
                     {v.skills && <p className="flex items-center gap-2"><Wrench className="h-3.5 w-3.5" />{v.skills}</p>}
                   </div>
