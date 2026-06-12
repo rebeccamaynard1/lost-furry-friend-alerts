@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   Home, MapPin, MessageSquare, PawPrint, Eye, Building2,
   Users, TreePine, Heart, Crown, LayoutDashboard, Menu, X,
-  AlertTriangle, CheckCircle2, Megaphone, LogIn, LogOut, User, HelpCircle, Bell, Search
+  AlertTriangle, CheckCircle2, Megaphone, LogIn, LogOut, User, HelpCircle, Bell, Search, Inbox
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationBell from "@/components/NotificationBell";
