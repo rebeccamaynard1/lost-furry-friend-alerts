@@ -80,8 +80,6 @@ export default function ReportLostPage() {
       age: formData.age.trim() || null, gender: formData.gender || null,
       microchip: formData.microchip.trim() || null, date_lost: formData.dateLost,
       description: formData.description.trim() || null,
-      contact_name: formData.contactName.trim(), contact_phone: formData.contactPhone.trim(),
-      contact_email: formData.contactEmail.trim() || null,
       last_seen_address: formData.lastSeenAddress.trim() || null,
       last_seen_lat,
       last_seen_lng,
@@ -90,6 +88,16 @@ export default function ReportLostPage() {
     }).select().single();
 
     if (error) { toast.error("Failed to submit: " + error.message); setLoading(false); return; }
+
+    // Store contact info in protected table (owner-only access via RLS)
+    const { error: contactError } = await supabase.from("lost_pet_contacts").insert({
+      pet_id: data.id,
+      user_id: user.id,
+      contact_name: formData.contactName.trim(),
+      contact_phone: formData.contactPhone.trim(),
+      contact_email: formData.contactEmail.trim() || null,
+    });
+    if (contactError) console.error("Failed to save contact info:", contactError);
 
     try {
       await supabase.functions.invoke("process-alerts", {

@@ -31,14 +31,20 @@ export default function MyPetsPage() {
     if (!user) { setLoading(false); return; }
     Promise.all([
       supabase.from("lost_pets")
-        .select("id, pet_name, species, breed, status, date_lost, photos, contact_name, description, last_seen_address")
+        .select("id, pet_name, species, breed, status, date_lost, photos, description, last_seen_address, lost_pet_contacts(contact_name)")
         .eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("found_pets")
         .select("id, species, breed, color, status, date_found, photos, description, found_address")
         .eq("user_id", user.id).order("created_at", { ascending: false }),
     ]).then(([lostRes, foundRes]) => {
-      setLostPets(lostRes.data || []);
-      setFoundPets(foundRes.data || []);
+      const lost = ((lostRes.data as any[]) || []).map((p) => ({
+        ...p,
+        contact_name: Array.isArray(p.lost_pet_contacts)
+          ? p.lost_pet_contacts[0]?.contact_name ?? ""
+          : p.lost_pet_contacts?.contact_name ?? "",
+      })) as LostPet[];
+      setLostPets(lost);
+      setFoundPets((foundRes.data as FoundPet[]) || []);
       setLoading(false);
     });
   }, [user]);
