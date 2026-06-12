@@ -1,13 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Crown, Check, Zap, Star, Settings, Rocket, TrendingUp } from "lucide-react";
+import { Crown, Check, Zap, Star, Settings, Rocket, TrendingUp, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PremiumBadge from "@/components/PremiumBadge";
 import SEO from "@/components/SEO";
+
+type BoostRow = {
+  id: string;
+  tier: string;
+  radius_miles: number;
+  duration_days: number;
+  purchased_at: string;
+  expires_at: string;
+};
 
 const features = [
   "Instant push alerts when a pet is reported near you",
