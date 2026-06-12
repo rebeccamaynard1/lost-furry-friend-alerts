@@ -181,6 +181,55 @@ export default function PremiumPage() {
           <p className="text-xs text-muted-foreground mt-3">Cancel anytime. Your support keeps us running.</p>
         </CardContent>
       </Card>
+
+      <div className="mt-12 text-left">
+        <h2 className="text-2xl font-heading font-bold text-foreground text-center mb-2">
+          One-Time Alert Boosts
+        </h2>
+        <p className="text-muted-foreground text-center mb-6 text-sm">
+          Not ready for Premium? Give a single lost pet report extra reach.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {BOOSTS.map((b) => {
+            const Icon = b.icon;
+            return (
+              <Card key={b.id} className="border-accent/20 hover:border-accent/50 transition-colors">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className="h-5 w-5 text-accent" />
+                    <h3 className="font-heading font-bold text-lg text-foreground">{b.name}</h3>
+                  </div>
+                  <div className="mb-3">
+                    <span className="text-3xl font-extrabold font-heading text-foreground">{b.price}</span>
+                    <span className="text-muted-foreground text-sm"> one-time</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">{b.description}</p>
+                  <ul className="space-y-2 mb-6 flex-1">
+                    {b.perks.map((p) => (
+                      <li key={p} className="flex items-start gap-2 text-sm text-foreground">
+                        <Check className="h-4 w-4 text-found mt-0.5 flex-shrink-0" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-xl"
+                    onClick={() => handleBuyBoost(b.priceId, b.id)}
+                    disabled={boostLoading === b.id}
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    {boostLoading === b.id ? "Loading..." : `Buy ${b.price} Boost`}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
     </div>
   );
 }
