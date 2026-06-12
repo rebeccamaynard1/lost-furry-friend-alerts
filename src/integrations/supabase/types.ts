@@ -682,6 +682,28 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_public_rural_partners: {
+        Args: never
+        Returns: {
+          county: string
+          created_at: string
+          hunting_area: string
+          id: string
+          name: string
+          trail_cam_count: number
+        }[]
+      }
+      get_public_volunteers: {
+        Args: never
+        Returns: {
+          availability: string
+          county: string
+          created_at: string
+          id: string
+          name: string
+          skills: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
