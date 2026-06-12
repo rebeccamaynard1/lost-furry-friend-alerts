@@ -62,6 +62,51 @@ serve(async (req) => {
     else logStep("Profile updated", { email, isPremium });
   };
 
+  const BOOST_PRICE_MAP: Record<string, { tier: string; duration_days: number; radius_miles: number }> = {
+    "price_1ThR93Cn19AGQAKo7L2lYlna": { tier: "standard", duration_days: 3, radius_miles: 15 },
+    "price_1ThR94Cn19AGQAKomoFmagza": { tier: "extended", duration_days: 7, radius_miles: 25 },
+  };
+
+  const recordBoostFromSession = async (session: Stripe.Checkout.Session) => {
+    try {
+      const email = session.customer_details?.email || session.customer_email;
+      if (!email) return;
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
+      const priceId = lineItems.data[0]?.price?.id;
+      const meta = priceId ? BOOST_PRICE_MAP[priceId] : undefined;
+      if (!meta) {
+        logStep("Payment not a known boost price", { priceId });
+        return;
+      }
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id")
+        .eq("email", email)
+        .maybeSingle();
+      if (profileError || !profile?.user_id) {
+        logStep("Profile not found for boost", { email, error: profileError?.message });
+        return;
+      }
+      const purchasedAt = new Date();
+      const expiresAt = new Date(purchasedAt.getTime() + meta.duration_days * 24 * 60 * 60 * 1000);
+      const { error: insertError } = await supabaseAdmin.from("alert_boosts").insert({
+        user_id: profile.user_id,
+        tier: meta.tier,
+        stripe_session_id: session.id,
+        stripe_price_id: priceId,
+        amount_cents: session.amount_total ?? lineItems.data[0]?.amount_total ?? null,
+        duration_days: meta.duration_days,
+        radius_miles: meta.radius_miles,
+        purchased_at: purchasedAt.toISOString(),
+        expires_at: expiresAt.toISOString(),
+      });
+      if (insertError) logStep("Boost insert error", { error: insertError.message });
+      else logStep("Boost recorded", { user_id: profile.user_id, tier: meta.tier, expires_at: expiresAt.toISOString() });
+    } catch (err) {
+      logStep("Boost handler error", { error: (err as Error).message });
+    }
+  };
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -69,6 +114,8 @@ serve(async (req) => {
         if (session.mode === "subscription") {
           const email = session.customer_details?.email || session.customer_email;
           await updateProfileByEmail(email, true);
+        } else if (session.mode === "payment") {
+          await recordBoostFromSession(session);
         }
         break;
       }

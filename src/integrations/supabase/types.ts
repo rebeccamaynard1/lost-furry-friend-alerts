@@ -47,6 +47,51 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_boosts: {
+        Row: {
+          amount_cents: number | null
+          created_at: string
+          duration_days: number
+          expires_at: string
+          id: string
+          purchased_at: string
+          radius_miles: number
+          stripe_price_id: string | null
+          stripe_session_id: string | null
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number | null
+          created_at?: string
+          duration_days?: number
+          expires_at: string
+          id?: string
+          purchased_at?: string
+          radius_miles?: number
+          stripe_price_id?: string | null
+          stripe_session_id?: string | null
+          tier: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number | null
+          created_at?: string
+          duration_days?: number
+          expires_at?: string
+          id?: string
+          purchased_at?: string
+          radius_miles?: number
+          stripe_price_id?: string | null
+          stripe_session_id?: string | null
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       donations: {
         Row: {
           amount: number

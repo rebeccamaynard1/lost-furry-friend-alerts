@@ -1,13 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Crown, Check, Zap, Star, Settings, Rocket, TrendingUp } from "lucide-react";
+import { Crown, Check, Zap, Star, Settings, Rocket, TrendingUp, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PremiumBadge from "@/components/PremiumBadge";
 import SEO from "@/components/SEO";
+
+type BoostRow = {
+  id: string;
+  tier: string;
+  radius_miles: number;
+  duration_days: number;
+  purchased_at: string;
+  expires_at: string;
+};
 
 const features = [
   "Instant push alerts when a pet is reported near you",
@@ -56,6 +65,24 @@ export default function PremiumPage() {
   const [loading, setLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [boostLoading, setBoostLoading] = useState<string | null>(null);
+  const [boosts, setBoosts] = useState<BoostRow[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setBoosts([]);
+      return;
+    }
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("alert_boosts")
+        .select("id, tier, radius_miles, duration_days, purchased_at, expires_at")
+        .eq("user_id", user.id)
+        .order("purchased_at", { ascending: false })
+        .limit(10);
+      if (!error && data) setBoosts(data as BoostRow[]);
+    };
+    load();
+  }, [user]);
 
   const handleBuyBoost = async (priceId: string, id: string) => {
     if (!user) {
@@ -181,6 +208,79 @@ export default function PremiumPage() {
           <p className="text-xs text-muted-foreground mt-3">Cancel anytime. Your support keeps us running.</p>
         </CardContent>
       </Card>
+
+      {user && boosts.length > 0 && (() => {
+        const now = Date.now();
+        const active = boosts.filter((b) => new Date(b.expires_at).getTime() > now);
+        const past = boosts.filter((b) => new Date(b.expires_at).getTime() <= now);
+        const tierLabel = (t: string) =>
+          t === "extended" ? "Extended Boost" : t === "standard" ? "Standard Boost" : t;
+        const fmt = (d: string) => new Date(d).toLocaleDateString(undefined, {
+          month: "short", day: "numeric", year: "numeric",
+        });
+        const hoursLeft = (d: string) =>
+          Math.max(0, Math.round((new Date(d).getTime() - now) / 36e5));
+        return (
+          <div className="mt-8 text-left">
+            <h2 className="text-xl font-heading font-bold text-foreground text-center mb-4">
+              Your Alert Boosts
+            </h2>
+            {active.length > 0 && (
+              <div className="space-y-3 mb-4">
+                {active.map((b) => {
+                  const hrs = hoursLeft(b.expires_at);
+                  return (
+                    <Card key={b.id} className="border-found/40 bg-found/5">
+                      <CardContent className="p-4 flex items-start gap-3">
+                        <Rocket className="h-5 w-5 text-found mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <p className="font-semibold text-foreground">
+                              {tierLabel(b.tier)}
+                              <span className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-found bg-found/10 px-2 py-0.5 rounded-full">
+                                <span className="h-1.5 w-1.5 rounded-full bg-found" />
+                                Active
+                              </span>
+                            </p>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {hrs < 24 ? `${hrs}h left` : `${Math.round(hrs / 24)}d left`}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {b.radius_miles}-mile reach · Purchased {fmt(b.purchased_at)} · Expires {fmt(b.expires_at)}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+            {past.length > 0 && (
+              <details className="mb-2">
+                <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                  Past boosts ({past.length})
+                </summary>
+                <div className="space-y-2 mt-3">
+                  {past.map((b) => (
+                    <Card key={b.id} className="border-border/50 bg-muted/30">
+                      <CardContent className="p-3 flex items-center justify-between gap-2 text-sm">
+                        <span className="font-medium text-foreground">{tierLabel(b.tier)}</span>
+                        <span className="text-muted-foreground text-xs">
+                          Expired {fmt(b.expires_at)}
+                        </span>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        );
+      })()}
+
+
 
       <div className="mt-12 text-left">
         <h2 className="text-2xl font-heading font-bold text-foreground text-center mb-2">
