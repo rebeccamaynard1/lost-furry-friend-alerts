@@ -19,7 +19,7 @@ const features = [
   "Ad-free experience",
 ];
 
-const PREMIUM_PRICE_ID = "price_1TUseOCn19AGQAKo2P1DfGv2";
+const PREMIUM_PRICE_ID = "price_1ThR8wCn19AGQAKoFPzPYQXh";
 
 export default function PremiumPage() {
   const { user, isPremium, subscriptionEnd } = useAuth();
