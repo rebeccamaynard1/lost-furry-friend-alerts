@@ -52,7 +52,9 @@ export type Database = {
           amount_cents: number | null
           created_at: string
           duration_days: number
+          expired_notified_at: string | null
           expires_at: string
+          expiring_soon_notified_at: string | null
           id: string
           purchased_at: string
           radius_miles: number
@@ -66,7 +68,9 @@ export type Database = {
           amount_cents?: number | null
           created_at?: string
           duration_days?: number
+          expired_notified_at?: string | null
           expires_at: string
+          expiring_soon_notified_at?: string | null
           id?: string
           purchased_at?: string
           radius_miles?: number
@@ -80,7 +84,9 @@ export type Database = {
           amount_cents?: number | null
           created_at?: string
           duration_days?: number
+          expired_notified_at?: string | null
           expires_at?: string
+          expiring_soon_notified_at?: string | null
           id?: string
           purchased_at?: string
           radius_miles?: number
