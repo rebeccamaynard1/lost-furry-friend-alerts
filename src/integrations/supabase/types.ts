@@ -278,6 +278,44 @@ export type Database = {
         }
         Relationships: []
       }
+      lost_pet_contacts: {
+        Row: {
+          contact_email: string | null
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          pet_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name: string
+          contact_phone: string
+          created_at?: string
+          pet_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          pet_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lost_pet_contacts_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: true
+            referencedRelation: "lost_pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lost_pets: {
         Row: {
           age: string | null
@@ -285,9 +323,6 @@ export type Database = {
           boosted_at: string | null
           breed: string | null
           color: string
-          contact_email: string | null
-          contact_name: string
-          contact_phone: string
           created_at: string
           date_lost: string
           description: string | null
@@ -311,9 +346,6 @@ export type Database = {
           boosted_at?: string | null
           breed?: string | null
           color: string
-          contact_email?: string | null
-          contact_name: string
-          contact_phone: string
           created_at?: string
           date_lost: string
           description?: string | null
@@ -337,9 +369,6 @@ export type Database = {
           boosted_at?: string | null
           breed?: string | null
           color?: string
-          contact_email?: string | null
-          contact_name?: string
-          contact_phone?: string
           created_at?: string
           date_lost?: string
           description?: string | null
