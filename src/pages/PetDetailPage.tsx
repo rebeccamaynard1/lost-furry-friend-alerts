@@ -40,55 +40,76 @@ type PetDetail = {
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const petType = searchParams.get("type") || "lost";
+  const initialType = searchParams.get("type") || "lost";
   const { user } = useAuth();
   const navigate = useNavigate();
   const [pet, setPet] = useState<PetDetail | null>(null);
+  const [resolvedType, setResolvedType] = useState<"lost" | "found">(initialType === "found" ? "found" : "lost");
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
 
   useEffect(() => {
     if (!id) return;
     (async () => {
-      if (petType === "found") {
-        const { data, error } = await supabase
-          .from("found_pets")
-          .select("id, species, breed, color, date_found, found_address, holding_location, description, photos, status, user_id, created_at")
-          .eq("id", id)
-          .single();
-        if (error || !data) {
-          toast.error("Pet not found");
-          navigate("/");
-        } else {
-          setPet(data as PetDetail);
-        }
-      } else {
-        const { data, error } = await supabase
+      setLoading(true);
+      setNotFound(false);
+
+      const fetchLost = async () => {
+        const { data } = await supabase
           .from("lost_pets")
           .select("id, pet_name, species, breed, color, age, gender, microchip, date_lost, last_seen_address, description, photos, status, user_id, created_at")
           .eq("id", id)
-          .single();
-        if (error || !data) {
-          toast.error("Pet not found");
-          navigate("/");
-        } else {
-          // RLS returns a row only to the pet owner (or admins)
-          const { data: contact } = await supabase
-            .from("lost_pet_contacts")
-            .select("contact_name, contact_phone, contact_email")
-            .eq("pet_id", id)
-            .maybeSingle();
-          setPet({
-            ...(data as PetDetail),
-            contact_name: contact?.contact_name,
-            contact_phone: contact?.contact_phone,
-            contact_email: contact?.contact_email ?? null,
-          });
-        }
+          .maybeSingle();
+        return data;
+      };
+      const fetchFound = async () => {
+        const { data } = await supabase
+          .from("found_pets")
+          .select("id, species, breed, color, date_found, found_address, holding_location, description, photos, status, user_id, created_at")
+          .eq("id", id)
+          .maybeSingle();
+        return data;
+      };
+
+      // Try requested type first, then fall back to the other table so shared
+      // links / QR codes without a ?type= param still resolve for anyone.
+      const first = initialType === "found" ? fetchFound : fetchLost;
+      const second = initialType === "found" ? fetchLost : fetchFound;
+      let data = await first();
+      let type: "lost" | "found" = initialType === "found" ? "found" : "lost";
+      if (!data) {
+        data = await second();
+        if (data) type = initialType === "found" ? "lost" : "found";
+      }
+
+      if (!data) {
+        setPet(null);
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      setResolvedType(type);
+
+      if (type === "lost") {
+        const { data: contact } = await supabase
+          .from("lost_pet_contacts")
+          .select("contact_name, contact_phone, contact_email")
+          .eq("pet_id", id)
+          .maybeSingle();
+        setPet({
+          ...(data as PetDetail),
+          contact_name: contact?.contact_name,
+          contact_phone: contact?.contact_phone,
+          contact_email: contact?.contact_email ?? null,
+        });
+      } else {
+        setPet(data as PetDetail);
       }
       setLoading(false);
     })();
-  }, [id, petType]);
+  }, [id, initialType]);
 
   const handleContact = () => {
     if (!user) {
@@ -110,9 +131,23 @@ export default function PetDetailPage() {
     );
   }
 
-  if (!pet) return null;
+  if (notFound || !pet) {
+    return (
+      <div className="page-container max-w-md text-center">
+        <SEO title="Pet listing not found — Lost Furry Friend Alerts" description="This pet report is no longer available. Browse the map or report a lost or found pet." />
+        <h1 className="text-2xl font-bold font-heading text-foreground mb-2">This listing isn't available</h1>
+        <p className="text-muted-foreground mb-6">
+          The pet report may have been removed or reunited. Please explore the map or report a pet to help.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button asChild variant="hero"><Link to="/map">View Map</Link></Button>
+          <Button asChild variant="outline"><Link to="/">Go Home</Link></Button>
+        </div>
+      </div>
+    );
+  }
 
-  const isLost = petType !== "found";
+  const isLost = resolvedType !== "found";
   const displayName = pet.pet_name || `Found ${pet.species}`;
   const dateLabel = isLost ? "Lost" : "Found";
   const dateValue = pet.date_lost || pet.date_found;
