@@ -32,7 +32,7 @@ export default function HomePage() {
         supabase.from("sponsors_public" as any).select("id, business_name, logo, website, tier").limit(8),
       ]);
       setStats({ reunited: reunited.count || 0, active: active.count || 0, volunteers: vols.count || 0 });
-      setSponsors(sponsorRes.data || []);
+      setSponsors((sponsorRes.data as any) || []);
     }
     fetchStats();
   }, []);
