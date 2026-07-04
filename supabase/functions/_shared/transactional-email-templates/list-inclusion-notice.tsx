@@ -36,7 +36,9 @@ const Email = ({ recipient_name }: Props) => (
         </Section>
         <Text style={text}>
           If you'd rather <strong>not</strong> receive these alerts, just reach
-          out to Rebecca and we'll remove you right away:
+          out to Rebecca and we'll remove you right away. <strong>If we don't
+          hear back from you, you'll stay on the list and continue receiving
+          our alerts.</strong>
         </Text>
         <Text style={contact}>
           📧 <Link href="mailto:rebeccamaynard1@gmail.com" style={link}>rebeccamaynard1@gmail.com</Link><br />
