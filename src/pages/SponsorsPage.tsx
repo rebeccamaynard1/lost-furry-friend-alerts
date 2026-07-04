@@ -48,7 +48,7 @@ export default function SponsorsPage() {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    supabase.from("sponsors").select("id, business_name, logo, website, tier, email").eq("approved", true).order("created_at").then(({ data }) => {
+    supabase.from("sponsors_public" as any).select("id, business_name, logo, website, tier").order("created_at").then(({ data }) => {
       setSponsors(data || []);
       setLoading(false);
     });
