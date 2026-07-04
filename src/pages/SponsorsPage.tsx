@@ -49,7 +49,7 @@ export default function SponsorsPage() {
 
   useEffect(() => {
     supabase.from("sponsors_public" as any).select("id, business_name, logo, website, tier").order("created_at").then(({ data }) => {
-      setSponsors(data || []);
+      setSponsors((data as any) || []);
       setLoading(false);
     });
   }, []);
