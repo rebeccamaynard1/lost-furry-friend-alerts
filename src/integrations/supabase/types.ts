@@ -735,33 +735,6 @@ export type Database = {
       }
     }
     Views: {
-      alabama_partners_public: {
-        Row: {
-          county: string | null
-          created_at: string | null
-          id: string | null
-          name: string | null
-          type: string | null
-          website: string | null
-        }
-        Insert: {
-          county?: string | null
-          created_at?: string | null
-          id?: string | null
-          name?: string | null
-          type?: string | null
-          website?: string | null
-        }
-        Update: {
-          county?: string | null
-          created_at?: string | null
-          id?: string | null
-          name?: string | null
-          type?: string | null
-          website?: string | null
-        }
-        Relationships: []
-      }
       sponsors_public: {
         Row: {
           business_name: string | null
@@ -814,6 +787,17 @@ export type Database = {
           name: string
           profile_photo: string
           user_id: string
+        }[]
+      }
+      get_public_alabama_partners: {
+        Args: never
+        Returns: {
+          county: string
+          created_at: string
+          id: string
+          name: string
+          type: string
+          website: string
         }[]
       }
       get_public_rural_partners: {
