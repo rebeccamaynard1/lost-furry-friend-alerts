@@ -131,9 +131,23 @@ export default function PetDetailPage() {
     );
   }
 
-  if (!pet) return null;
+  if (notFound || !pet) {
+    return (
+      <div className="page-container max-w-md text-center">
+        <SEO title="Pet listing not found — Lost Furry Friend Alerts" description="This pet report is no longer available. Browse the map or report a lost or found pet." />
+        <h1 className="text-2xl font-bold font-heading text-foreground mb-2">This listing isn't available</h1>
+        <p className="text-muted-foreground mb-6">
+          The pet report may have been removed or reunited. Please explore the map or report a pet to help.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button asChild variant="hero"><Link to="/map">View Map</Link></Button>
+          <Button asChild variant="outline"><Link to="/">Go Home</Link></Button>
+        </div>
+      </div>
+    );
+  }
 
-  const isLost = petType !== "found";
+  const isLost = resolvedType !== "found";
   const displayName = pet.pet_name || `Found ${pet.species}`;
   const dateLabel = isLost ? "Lost" : "Found";
   const dateValue = pet.date_lost || pet.date_found;
