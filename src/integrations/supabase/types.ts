@@ -735,7 +735,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      sponsors_public: {
+        Row: {
+          business_name: string | null
+          created_at: string | null
+          id: string | null
+          logo: string | null
+          tier: string | null
+          website: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string | null
+          id?: string | null
+          logo?: string | null
+          tier?: string | null
+          website?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string | null
+          id?: string | null
+          logo?: string | null
+          tier?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {
