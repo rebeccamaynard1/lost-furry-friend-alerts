@@ -6,5 +6,11 @@ Disallow: /my-pets
 Disallow: /my-reports
 Disallow: /profile
 Disallow: /notification-settings
+Disallow: /notifications
+Disallow: /unsubscribe
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /payment-success
+Disallow: /donation-success
 
-Sitemap: https://little-foot-finder.lovable.app/sitemap.xml
+Sitemap: https://lostfurryfriendalerts.com/sitemap.xml
