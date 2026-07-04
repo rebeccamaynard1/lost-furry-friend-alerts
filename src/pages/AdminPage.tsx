@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   LayoutDashboard, Users, PawPrint, Building2, AlertTriangle, CheckCircle2,
-  Eye, Megaphone, Loader2, Check, X, Shield, Heart, DollarSign
+  Eye, Megaphone, Loader2, Check, X, Shield, Heart, DollarSign, Mail
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
