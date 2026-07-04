@@ -60,12 +60,18 @@ export default function AlabamaPartnersPage() {
   }, [user]);
 
   const loadPartners = async () => {
-    // Signed-in users see full contact details; anon sees the public directory view without email/phone
-    const query = user
-      ? supabase.from("alabama_partners").select("id, name, type, county, email, phone, website").order("name")
-      : supabase.from("alabama_partners_public" as any).select("id, name, type, county, website").order("name");
-    const { data } = await query;
-    setPartners(((data as any) || []) as Partner[]);
+    // Signed-in users see full contact details; anon calls the safe RPC that omits email/phone.
+    if (user) {
+      const { data } = await supabase
+        .from("alabama_partners")
+        .select("id, name, type, county, email, phone, website")
+        .order("name");
+      setPartners(((data as any) || []) as Partner[]);
+    } else {
+      const { data } = await supabase.rpc("get_public_alabama_partners" as any);
+      const sorted = ((data as any[]) || []).slice().sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      setPartners(sorted as Partner[]);
+    }
     setLoading(false);
   };
 
