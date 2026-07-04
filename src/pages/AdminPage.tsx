@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   LayoutDashboard, Users, PawPrint, Building2, AlertTriangle, CheckCircle2,
-  Eye, Megaphone, Loader2, Check, X, Shield, Heart, DollarSign
+  Eye, Megaphone, Loader2, Check, X, Shield, Heart, DollarSign, Mail
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +26,21 @@ export default function AdminPage() {
   const [pendingSponsors, setPendingSponsors] = useState<PendingSponsor[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sendingNotice, setSendingNotice] = useState(false);
+
+  const sendListNotice = async () => {
+    if (!confirm("Send the 'you're on our alert list' notice to EVERY email in our lists (users, shelters, Alabama partners, rural partners, volunteers, sponsors)? This runs once per address.")) return;
+    setSendingNotice(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-list-notice");
+      if (error) throw error;
+      toast.success(`Queued ${data?.queued ?? 0} of ${data?.recipients ?? 0} recipients${data?.failed ? ` (${data.failed} failed)` : ""}.`);
+    } catch (e: any) {
+      toast.error("Failed to send notice: " + (e.message || e));
+    } finally {
+      setSendingNotice(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -107,6 +122,18 @@ export default function AdminPage() {
   return (
     <div className="page-container">
       <h1 className="page-title"><LayoutDashboard className="inline h-7 w-7 text-primary mr-2" />Admin Dashboard</h1>
+
+      <Card className="mb-6 border-primary/30 bg-primary/5">
+        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+          <div>
+            <p className="font-semibold text-foreground flex items-center gap-2"><Mail className="h-4 w-4 text-primary" />Send list-inclusion notice</p>
+            <p className="text-sm text-muted-foreground">One-time email to every address across users, shelters, Alabama partners, rural partners, volunteers, and sponsors. Duplicates are auto-merged.</p>
+          </div>
+          <Button onClick={sendListNotice} disabled={sendingNotice}>
+            {sendingNotice ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Sending…</> : <><Mail className="h-4 w-4 mr-2" />Send notice to everyone</>}
+          </Button>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
         {statCards.map((s) => {
