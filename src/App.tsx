@@ -70,6 +70,7 @@ const App = () => (
               <Route path="/donation-success" element={<PaymentSuccessPage />} />
               <Route path="/help" element={<HelpPage />} />
               <Route path="/notifications" element={<RoleGuard allowed={[]} authOnly><NotificationsCenterPage /></RoleGuard>} />
+              <Route path="/notification-settings" element={<RoleGuard allowed={[]} authOnly><NotificationSettingsPage /></RoleGuard>} />
               <Route path="/alabama-partners" element={<AlabamaPartnersPage />} />
               <Route path="/profile" element={<ProfileSettingsPage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
