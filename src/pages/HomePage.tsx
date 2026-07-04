@@ -29,10 +29,10 @@ export default function HomePage() {
         supabase.from("lost_pets").select("id", { count: "exact", head: true }).eq("status", "reunited"),
         supabase.from("lost_pets").select("id", { count: "exact", head: true }).eq("status", "lost"),
         supabase.from("volunteers").select("id", { count: "exact", head: true }),
-        supabase.from("sponsors").select("id, business_name, logo, website, tier").eq("approved", true).limit(8),
+        supabase.from("sponsors_public" as any).select("id, business_name, logo, website, tier").limit(8),
       ]);
       setStats({ reunited: reunited.count || 0, active: active.count || 0, volunteers: vols.count || 0 });
-      setSponsors(sponsorRes.data || []);
+      setSponsors((sponsorRes.data as any) || []);
     }
     fetchStats();
   }, []);
