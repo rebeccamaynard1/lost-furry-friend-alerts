@@ -1,0 +1,10 @@
+/*
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(self), payment=(self "https://js.stripe.com" "https://checkout.stripe.com"), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-site
+  X-XSS-Protection: 0
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self' https://js.stripe.com https://checkout.stripe.com https://lovable.dev https://cdn.gpteng.co; script-src-elem 'self' https://js.stripe.com https://checkout.stripe.com https://lovable.dev https://cdn.gpteng.co; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://*.r2.dev https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev https://api.stripe.com; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://checkout.stripe.com https://nominatim.openstreetmap.org; frame-src https://js.stripe.com https://checkout.stripe.com https://hooks.stripe.com; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests
