@@ -91,5 +91,25 @@
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
     "vitest": "^3.2.6"
+  },
+  "overrides": {
+    "postcss": "^8.5.16",
+    "rollup": "^4.62.2",
+    "ws": "^8.21.0",
+    "yaml": "^2.9.0",
+    "picomatch": "^4.0.5",
+    "minimatch": "^10.2.5",
+    "vitest": "^3.2.6",
+    "@vitest/mocker": "^3.2.6",
+    "@vitest/ui": "^3.2.6"
+  },
+  "resolutions": {
+    "postcss": "^8.5.16",
+    "rollup": "^4.62.2",
+    "ws": "^8.21.0",
+    "yaml": "^2.9.0",
+    "picomatch": "^4.0.5",
+    "minimatch": "^10.2.5",
+    "vitest": "^3.2.6"
   }
 }
