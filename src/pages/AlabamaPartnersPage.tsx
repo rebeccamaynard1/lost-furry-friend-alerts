@@ -60,11 +60,12 @@ export default function AlabamaPartnersPage() {
   }, [user]);
 
   const loadPartners = async () => {
-    const { data } = await supabase
-      .from("alabama_partners")
-      .select("id, name, type, county, email, phone, website")
-      .order("name");
-    setPartners((data as Partner[]) || []);
+    // Signed-in users see full contact details; anon sees the public directory view without email/phone
+    const query = user
+      ? supabase.from("alabama_partners").select("id, name, type, county, email, phone, website").order("name")
+      : supabase.from("alabama_partners_public" as any).select("id, name, type, county, website").order("name");
+    const { data } = await query;
+    setPartners(((data as any) || []) as Partner[]);
     setLoading(false);
   };
 
