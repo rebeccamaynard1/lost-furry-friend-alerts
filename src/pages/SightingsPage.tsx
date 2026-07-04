@@ -71,12 +71,21 @@ export default function SightingsPage() {
 
     if (error) toast.error(error.message);
     else {
-      toast.success("Sighting reported!");
+      toast.success("Sighting reported! Alerting everyone in our network.");
       setForm({ notes: "", location_address: "", lat: "", lng: "" });
       setPhotoUrl(null);
       setOpen(false);
       fetchSightings();
       if (lat && lng) { supabase.functions.invoke("match-sighting", { body: { lat, lng } }); }
+      supabase.functions.invoke("process-alerts", {
+        body: {
+          type: "sighting",
+          last_seen_address: form.location_address,
+          description: form.notes,
+          photo_url: photoUrl,
+          reporter_user_id: user.id,
+        },
+      });
     }
     setSubmitting(false);
   };
