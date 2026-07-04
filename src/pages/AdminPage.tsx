@@ -26,6 +26,21 @@ export default function AdminPage() {
   const [pendingSponsors, setPendingSponsors] = useState<PendingSponsor[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sendingNotice, setSendingNotice] = useState(false);
+
+  const sendListNotice = async () => {
+    if (!confirm("Send the 'you're on our alert list' notice to EVERY email in our lists (users, shelters, Alabama partners, rural partners, volunteers, sponsors)? This runs once per address.")) return;
+    setSendingNotice(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-list-notice");
+      if (error) throw error;
+      toast.success(`Queued ${data?.queued ?? 0} of ${data?.recipients ?? 0} recipients${data?.failed ? ` (${data.failed} failed)` : ""}.`);
+    } catch (e: any) {
+      toast.error("Failed to send notice: " + (e.message || e));
+    } finally {
+      setSendingNotice(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
