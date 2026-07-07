@@ -215,13 +215,21 @@ export function openFlyer(d: FlyerData) {
   // Attach handlers from the parent context so we don't rely on inline
   // event handlers / inline <script> (blocked by the app's CSP that the
   // about:blank popup inherits).
+  let autoPrinted = false;
+  let wired = false;
+  const doAutoPrint = () => {
+    if (autoPrinted) return;
+    autoPrinted = true;
+    try { w.print(); } catch { /* ignore */ }
+  };
   const wire = () => {
+    if (wired) return;
+    wired = true;
     try {
       const btn = w.document.getElementById("lffa-print-btn");
-      if (btn) btn.addEventListener("click", () => w.print());
-      setTimeout(() => {
-        try { w.print(); } catch { /* ignore */ }
-      }, 700);
+      // Manual button click always prints (independent of the one-shot auto-print).
+      if (btn) btn.addEventListener("click", () => { try { w.print(); } catch { /* ignore */ } });
+      setTimeout(doAutoPrint, 700);
     } catch { /* popup closed */ }
   };
   if (w.document.readyState === "complete") wire();
