@@ -182,7 +182,7 @@ export function openFlyer(d: FlyerData) {
   @media print { .actions { display: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style></head>
 <body>
-<div class="actions"><button onclick="window.print()">${printBtn}</button></div>
+<div class="actions"><button id="lffa-print-btn" type="button">${printBtn}</button></div>
 <div class="flyer">
   <div class="header"><h1>${headline}</h1><p>${subhead}</p></div>
   ${d.photoUrl ? `<div class="photo"><img src="${escapeAttr(d.photoUrl)}" crossorigin="anonymous" alt=""></div>` : ""}
@@ -201,7 +201,6 @@ export function openFlyer(d: FlyerData) {
   </div>
   <div class="footer">Lost Furry Friend Alerts — lostfurryfriendalerts.com</div>
 </div>
-<script>window.addEventListener('load', () => setTimeout(() => window.print(), 600));</script>
 </body></html>`;
 
   const w = window.open("", "_blank", "width=850,height=1100");
@@ -212,7 +211,23 @@ export function openFlyer(d: FlyerData) {
   w.document.open();
   w.document.write(html);
   w.document.close();
+
+  // Attach handlers from the parent context so we don't rely on inline
+  // event handlers / inline <script> (blocked by the app's CSP that the
+  // about:blank popup inherits).
+  const wire = () => {
+    try {
+      const btn = w.document.getElementById("lffa-print-btn");
+      if (btn) btn.addEventListener("click", () => w.print());
+      setTimeout(() => {
+        try { w.print(); } catch { /* ignore */ }
+      }, 700);
+    } catch { /* popup closed */ }
+  };
+  if (w.document.readyState === "complete") wire();
+  else w.addEventListener("load", wire);
 }
+
 
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
