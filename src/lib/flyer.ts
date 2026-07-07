@@ -218,13 +218,11 @@ export function openFlyer(d: FlyerData) {
   let autoPrinted = false;
   let wired = false;
   const doAutoPrint = () => {
-    console.log("[flyer] doAutoPrint called, autoPrinted=", autoPrinted);
     if (autoPrinted) return;
     autoPrinted = true;
     try { w.print(); } catch { /* ignore */ }
   };
   const wire = () => {
-    console.log("[flyer] wire called, wired=", wired);
     if (wired) return;
     wired = true;
     try {
