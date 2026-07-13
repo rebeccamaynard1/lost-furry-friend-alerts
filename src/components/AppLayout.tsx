@@ -128,7 +128,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {isPremium && <PremiumBadge />}
             </div>
             <nav className="space-y-1">
-              {navItems.map((item) => {
+              {visibleNav.map((item) => {
+
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
                 return (
@@ -147,7 +148,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setSidebarOpen(false)} />
             <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-card shadow-xl md:hidden pt-16 overflow-y-auto">
               <nav className="space-y-1 px-3 py-4">
-                {navItems.map((item) => {
+                {visibleNav.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
                   return (
@@ -171,7 +172,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Bottom Nav - Mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur md:hidden">
         <div className="flex items-center justify-around py-2">
-          {bottomNavItems.map((item) => {
+          {visibleBottomNav.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             return (
