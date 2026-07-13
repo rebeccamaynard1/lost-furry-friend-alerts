@@ -51,16 +51,32 @@ serve(async (req) => {
 
   logStep("Event received", { type: event.type, id: event.id });
 
-  const updateProfileByEmail = async (email: string | null | undefined, isPremium: boolean, sub?: Stripe.Subscription) => {
-    if (!email) return;
+  const updateProfilePremium = async (
+    opts: { customerId?: string | null; email?: string | null; userId?: string | null },
+    isPremium: boolean,
+  ) => {
     const update: Record<string, unknown> = {
       subscription_status: isPremium ? "premium" : "free",
       alert_radius_miles: isPremium ? 25 : 5,
     };
-    const { error } = await supabaseAdmin.from("profiles").update(update).eq("email", email);
-    if (error) logStep("Profile update error", { email, error: error.message });
-    else logStep("Profile updated", { email, isPremium });
+    // Prefer stripe_customer_id, then user_id, then email as a last resort.
+    let query = supabaseAdmin.from("profiles").update(update);
+    if (opts.customerId) query = query.eq("stripe_customer_id", opts.customerId);
+    else if (opts.userId) query = query.eq("user_id", opts.userId);
+    else if (opts.email) query = query.eq("email", opts.email);
+    else return;
+    const { error } = await query;
+    if (error) logStep("Profile update error", { ...opts, error: error.message });
+    else logStep("Profile updated", { ...opts, isPremium });
+
+    // Backfill customer id if we matched by email/user_id.
+    if (opts.customerId && (opts.userId || opts.email) && !error) {
+      const backfill = supabaseAdmin.from("profiles").update({ stripe_customer_id: opts.customerId });
+      if (opts.userId) await backfill.eq("user_id", opts.userId);
+      else if (opts.email) await backfill.eq("email", opts.email);
+    }
   };
+
 
   const BOOST_PRICE_MAP: Record<string, { tier: string; duration_days: number; radius_miles: number }> = {
     "price_1ThR93Cn19AGQAKo7L2lYlna": { tier: "standard", duration_days: 3, radius_miles: 15 },
