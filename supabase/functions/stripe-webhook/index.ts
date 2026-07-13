@@ -83,10 +83,25 @@ serve(async (req) => {
     "price_1ThR94Cn19AGQAKomoFmagza": { tier: "extended", duration_days: 7, radius_miles: 25 },
   };
 
+  const resolveUserId = async (opts: { customerId?: string | null; userId?: string | null; email?: string | null }): Promise<string | null> => {
+    if (opts.userId) return opts.userId;
+    if (opts.customerId) {
+      const { data } = await supabaseAdmin.from("profiles").select("user_id").eq("stripe_customer_id", opts.customerId).maybeSingle();
+      if (data?.user_id) return data.user_id;
+    }
+    if (opts.email) {
+      const { data } = await supabaseAdmin.from("profiles").select("user_id").eq("email", opts.email).maybeSingle();
+      if (data?.user_id) return data.user_id;
+    }
+    return null;
+  };
+
   const recordBoostFromSession = async (session: Stripe.Checkout.Session) => {
     try {
       const email = session.customer_details?.email || session.customer_email;
-      if (!email) return;
+      const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
+      const metaUserId = (session.metadata?.supabase_user_id as string | undefined) || session.client_reference_id || null;
+
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
       const priceId = lineItems.data[0]?.price?.id;
       const meta = priceId ? BOOST_PRICE_MAP[priceId] : undefined;
@@ -94,19 +109,16 @@ serve(async (req) => {
         logStep("Payment not a known boost price", { priceId });
         return;
       }
-      const { data: profile, error: profileError } = await supabaseAdmin
-        .from("profiles")
-        .select("user_id")
-        .eq("email", email)
-        .maybeSingle();
-      if (profileError || !profile?.user_id) {
-        logStep("Profile not found for boost", { email, error: profileError?.message });
+
+      const userId = await resolveUserId({ customerId, userId: metaUserId, email });
+      if (!userId) {
+        logStep("Profile not found for boost", { email, customerId });
         return;
       }
       const purchasedAt = new Date();
       const expiresAt = new Date(purchasedAt.getTime() + meta.duration_days * 24 * 60 * 60 * 1000);
       const { error: insertError } = await supabaseAdmin.from("alert_boosts").insert({
-        user_id: profile.user_id,
+        user_id: userId,
         tier: meta.tier,
         stripe_session_id: session.id,
         stripe_price_id: priceId,
@@ -117,7 +129,7 @@ serve(async (req) => {
         expires_at: expiresAt.toISOString(),
       });
       if (insertError) logStep("Boost insert error", { error: insertError.message });
-      else logStep("Boost recorded", { user_id: profile.user_id, tier: meta.tier, expires_at: expiresAt.toISOString() });
+      else logStep("Boost recorded", { user_id: userId, tier: meta.tier, expires_at: expiresAt.toISOString() });
     } catch (err) {
       logStep("Boost handler error", { error: (err as Error).message });
     }
@@ -127,9 +139,11 @@ serve(async (req) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
+        const email = session.customer_details?.email || session.customer_email;
+        const metaUserId = (session.metadata?.supabase_user_id as string | undefined) || session.client_reference_id || null;
         if (session.mode === "subscription") {
-          const email = session.customer_details?.email || session.customer_email;
-          await updateProfileByEmail(email, true);
+          await updateProfilePremium({ customerId, email, userId: metaUserId }, true);
         } else if (session.mode === "payment") {
           await recordBoostFromSession(session);
         }
@@ -138,22 +152,25 @@ serve(async (req) => {
       case "customer.subscription.created":
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
-        const customer = await stripe.customers.retrieve(sub.customer as string);
+        const customerId = sub.customer as string;
+        const customer = await stripe.customers.retrieve(customerId);
         const email = (customer as Stripe.Customer).email;
         const isActive = sub.status === "active" || sub.status === "trialing";
-        await updateProfileByEmail(email, isActive, sub);
+        await updateProfilePremium({ customerId, email }, isActive);
         break;
       }
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
-        const customer = await stripe.customers.retrieve(sub.customer as string);
+        const customerId = sub.customer as string;
+        const customer = await stripe.customers.retrieve(customerId);
         const email = (customer as Stripe.Customer).email;
-        await updateProfileByEmail(email, false);
+        await updateProfilePremium({ customerId, email }, false);
         break;
       }
       default:
         logStep("Unhandled event type", { type: event.type });
     }
+
 
     return new Response(JSON.stringify({ received: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
