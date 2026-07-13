@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -56,7 +57,7 @@ const App = () => (
               <Route path="/sightings" element={<SightingsPage />} />
               <Route path="/messages" element={<RoleGuard allowed={[]} authOnly><MessagesPage /></RoleGuard>} />
               <Route path="/my-pets" element={<RoleGuard allowed={[]} authOnly><MyPetsPage /></RoleGuard>} />
-              <Route path="/my-reports" element={<RoleGuard allowed={[]} authOnly><MyPetsPage /></RoleGuard>} />
+              <Route path="/my-reports" element={<Navigate to="/my-pets" replace />} />
               <Route path="/shelters" element={<SheltersPage />} />
               <Route path="/volunteers" element={<VolunteersPage />} />
               <Route path="/rural-partners" element={<RoleGuard allowed={["rural_partner"]}><RuralPartnersPage /></RoleGuard>} />

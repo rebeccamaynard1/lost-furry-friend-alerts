@@ -49,19 +49,25 @@ export default function SignupPage() {
       return;
     }
 
-    // If a session is returned (auto-confirm) and user picked a non-default role, claim it now.
+    // If a session is returned (auto-confirm) and user picked a non-default role,
+    // file a role request that an admin must approve.
     if (role !== "user" && data.session?.user) {
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert({ user_id: data.session.user.id, role });
-      if (roleError && !roleError.message.includes("duplicate")) {
-        console.error("Role claim failed:", roleError);
+      const { error: reqError } = await supabase
+        .from("role_requests")
+        .insert({ user_id: data.session.user.id, requested_role: role });
+      if (reqError && !reqError.message.includes("duplicate")) {
+        console.error("Role request failed:", reqError);
       }
     }
 
     setLoading(false);
-    toast.success("Account created! Please check your email to verify your account.");
+    toast.success(
+      role !== "user"
+        ? "Account created! Your role request is pending admin approval. Please check your email to verify."
+        : "Account created! Please check your email to verify your account."
+    );
     navigate("/login", { state: { pendingRole: role !== "user" ? role : undefined } });
+
   };
 
   return (

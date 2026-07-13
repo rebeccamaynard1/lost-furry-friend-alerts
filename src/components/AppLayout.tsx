@@ -14,40 +14,60 @@ import logo from "@/assets/littlefoot-logo-1.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const navItems = [
+type NavItem = {
+  path: string;
+  label: string;
+  icon: typeof Home;
+  /** If true, only visible when signed in. */
+  authOnly?: boolean;
+  /** If set, only visible to users holding one of these roles (admin always sees it). */
+  roles?: Array<"admin" | "shelter" | "volunteer" | "rural_partner" | "sponsor">;
+};
+
+const navItems: NavItem[] = [
   { path: "/", label: "Home", icon: Home },
   { path: "/report-lost", label: "Report Lost Pet", icon: AlertTriangle },
   { path: "/report-found", label: "Report Found Pet", icon: CheckCircle2 },
   { path: "/map", label: "Map", icon: MapPin },
   { path: "/sightings", label: "Sightings", icon: Eye },
-  { path: "/messages", label: "Messages", icon: MessageSquare },
-  { path: "/my-pets", label: "My Pets", icon: PawPrint },
-  { path: "/profile", label: "Profile Settings", icon: User },
+  { path: "/messages", label: "Messages", icon: MessageSquare, authOnly: true },
+  { path: "/my-pets", label: "My Pets", icon: PawPrint, authOnly: true },
+  { path: "/profile", label: "Profile Settings", icon: User, authOnly: true },
   { path: "/shelters", label: "Shelters", icon: Building2 },
   { path: "/volunteers", label: "Volunteers", icon: Users },
-  { path: "/rural-partners", label: "Rural Partners", icon: TreePine },
+  { path: "/rural-partners", label: "Rural Partners", icon: TreePine, roles: ["rural_partner"] },
   { path: "/alabama-partners", label: "Alabama Partners", icon: Building2 },
   { path: "/sponsors", label: "Sponsors", icon: Megaphone },
   { path: "/donate", label: "Donate", icon: Heart },
   { path: "/premium", label: "Upgrade to Premium", icon: Crown },
-  { path: "/notification-settings", label: "Notification Settings", icon: Bell },
-  { path: "/notifications", label: "Notifications Center", icon: Inbox },
+  { path: "/notification-settings", label: "Notification Settings", icon: Bell, authOnly: true },
+  { path: "/notifications", label: "Notifications Center", icon: Inbox, authOnly: true },
   { path: "/help", label: "Help & Guides", icon: HelpCircle },
-  { path: "/admin", label: "Admin Dashboard", icon: LayoutDashboard },
+  { path: "/admin", label: "Admin Dashboard", icon: LayoutDashboard, roles: ["admin"] },
 ];
 
-const bottomNavItems = [
+const bottomNavItems: NavItem[] = [
   { path: "/", label: "Home", icon: Home },
   { path: "/report-lost", label: "Report", icon: AlertTriangle },
   { path: "/map", label: "Map", icon: MapPin },
-  { path: "/messages", label: "Messages", icon: MessageSquare },
-  { path: "/my-pets", label: "My Pets", icon: PawPrint },
+  { path: "/messages", label: "Messages", icon: MessageSquare, authOnly: true },
+  { path: "/my-pets", label: "My Pets", icon: PawPrint, authOnly: true },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { user, isPremium } = useAuth();
+  const { user, isPremium, roles, isAdmin } = useAuth();
+
+  const canSee = (item: NavItem) => {
+    if (item.authOnly && !user) return false;
+    if (item.roles && !isAdmin && !item.roles.some((r) => roles.includes(r))) return false;
+    return true;
+  };
+
+  const visibleNav = navItems.filter(canSee);
+  const visibleBottomNav = bottomNavItems.filter(canSee);
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -108,7 +128,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {isPremium && <PremiumBadge />}
             </div>
             <nav className="space-y-1">
-              {navItems.map((item) => {
+              {visibleNav.map((item) => {
+
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
                 return (
@@ -127,7 +148,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setSidebarOpen(false)} />
             <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-card shadow-xl md:hidden pt-16 overflow-y-auto">
               <nav className="space-y-1 px-3 py-4">
-                {navItems.map((item) => {
+                {visibleNav.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
                   return (
@@ -151,7 +172,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Bottom Nav - Mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur md:hidden">
         <div className="flex items-center justify-around py-2">
-          {bottomNavItems.map((item) => {
+          {visibleBottomNav.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             return (
