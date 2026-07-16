@@ -49,16 +49,9 @@ export default function SignupPage() {
       return;
     }
 
-    // If a session is returned (auto-confirm) and user picked a non-default role,
-    // file a role request that an admin must approve.
-    if (role !== "user" && data.session?.user) {
-      const { error: reqError } = await supabase
-        .from("role_requests")
-        .insert({ user_id: data.session.user.id, requested_role: role });
-      if (reqError && !reqError.message.includes("duplicate")) {
-        console.error("Role request failed:", reqError);
-      }
-    }
+    // Role request is filed server-side by the handle_new_user trigger,
+    // using the requested_role in user metadata. No client insert needed
+    // (session is null until email verification).
 
     setLoading(false);
     toast.success(
