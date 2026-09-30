@@ -1,0 +1,1 @@
+CREATE POLICY "Admins can read project downloads" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'project-downloads' AND public.has_role(auth.uid(), 'admin'));
