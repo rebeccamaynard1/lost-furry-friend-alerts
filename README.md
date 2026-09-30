@@ -1,73 +1,47 @@
-# Welcome to your Lovable project
+# Lost Furry Friend Alerts
 
-## Project info
+Missing-pet alert platform with a directory of Alabama animal-welfare
+organizations. Built with Vite, TypeScript, React, shadcn-ui, and Tailwind
+CSS, backed by Supabase (Postgres, Auth, Edge Functions).
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Local development
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Requires Node.js & npm ([install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)).
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd lost-furry-friend-alerts
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+# Install dependencies
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Copy .env and fill in your Supabase project's URL/keys if not already set
+# (see .env in the repo root)
+
+# Start the dev server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Backend
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The Supabase project backing this app lives under `supabase/` (migrations,
+edge functions, config). Deploy schema changes with the Supabase CLI or the
+Supabase MCP tools:
 
-**Use GitHub Codespaces**
+```sh
+supabase db push
+supabase functions deploy <function-name>
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Edge functions that send email (`process-email-queue`,
+`handle-email-suppression`, `auth-email-hook`) use
+[Resend](https://resend.com) for delivery — see the Supabase project's Edge
+Function secrets for the required `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`,
+`AUTH_HOOK_SECRET`, and `PREVIEW_API_KEY` values.
 
-## What technologies are used for this project?
+## Deployment
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Deploy the frontend to any static host that builds a Vite app (Vercel,
+Netlify, Cloudflare Pages, etc.) — `npm run build` produces a static
+`dist/` folder to serve.

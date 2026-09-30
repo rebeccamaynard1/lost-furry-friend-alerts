@@ -29,8 +29,8 @@ access data belonging to other users.
 | Session                | JWT in `localStorage` (Supabase JS default); auto-refresh    |
 | Authorization          | Row Level Security on **all** public tables; RBAC via `has_role` |
 | Storage                | `pet-photos` bucket public read; user-scoped writes          |
-| Secrets                | Managed by Lovable Cloud; never committed to the repo        |
-| Dependencies           | `bun audit --prod --audit-level=high` in CI                  |
+| Secrets                | Managed as Supabase Edge Function secrets / hosting env vars; never committed to the repo |
+| Dependencies           | `npm audit --omit=dev --audit-level=high` in CI               |
 | Secret scanning        | gitleaks in CI                                               |
 | Static headers         | CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy |
 
@@ -41,9 +41,9 @@ static hosts) and `public/_headers` (for hosts that read Netlify-style
 header files). Highlights:
 
 - `default-src 'self'`
-- `script-src` allows only `'self'`, Stripe, and the Lovable badge on published deploys
+- `script-src` allows only `'self'` and Stripe
 - `connect-src` allows `'self'`, Supabase (`https + wss`), Stripe, and Nominatim geocoding
-- `img-src` allows `'self'`, `data:`, `blob:`, Supabase storage, OpenStreetMap tiles, Lovable asset CDN
+- `img-src` allows `'self'`, `data:`, `blob:`, Supabase storage, OpenStreetMap tiles, and the R2 asset bucket
 - `frame-src` restricted to Stripe checkout
 - `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`
 - `upgrade-insecure-requests`
@@ -98,8 +98,8 @@ All set `search_path = public` (or `''`) explicitly.
 `.github/workflows/security.yml` runs on every push, pull request, and
 weekly on Monday 06:00 UTC:
 
-1. `bun audit --prod --audit-level=high` — fails on high/critical CVEs.
-2. `bun run lint` + `tsc --noEmit`.
+1. `npm audit --omit=dev --audit-level=high` — fails on high/critical CVEs.
+2. `npm run lint` + `tsc --noEmit`.
 3. `gitleaks` — blocks accidentally committed secrets.
 
 ## Accepted risks

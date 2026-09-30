@@ -15,22 +15,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Install Node
+        uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: 22
+          cache: npm
 
       - name: Install dependencies (frozen lockfile)
-        run: bun install --frozen-lockfile
+        run: npm ci
 
       # Fails the job on any high/critical advisory in production deps.
       # Dev-only advisories are reported but do not fail the build.
       - name: Audit production dependencies
-        run: bun audit --prod --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Audit all dependencies (informational)
         if: always()
-        run: bun audit || true
+        run: npm audit || true
 
   lint:
     name: Lint & typecheck
@@ -38,17 +39,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: 22
+          cache: npm
 
-      - run: bun install --frozen-lockfile
+      - run: npm ci
 
       - name: ESLint
-        run: bun run lint
+        run: npm run lint
 
       - name: TypeScript check
-        run: bunx tsc --noEmit
+        run: npx tsc --noEmit
 
   secret-scan:
     name: Secret scan
