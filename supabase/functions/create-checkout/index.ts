@@ -84,12 +84,19 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: "payment",
+      mode: "subscription",
       client_reference_id: user.id,
       metadata: {
         supabase_user_id: user.id,
         tier,
         pet_id: petId ?? "",
+      },
+      subscription_data: {
+        metadata: {
+          supabase_user_id: user.id,
+          tier,
+          pet_id: petId ?? "",
+        },
       },
       success_url: `${req.headers.get("origin")}/lost?boosted=1`,
       cancel_url: `${req.headers.get("origin")}/lost`,

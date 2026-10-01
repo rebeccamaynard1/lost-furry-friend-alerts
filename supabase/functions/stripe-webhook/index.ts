@@ -52,66 +52,117 @@ serve(async (req) => {
 
   logStep("Event received", { type: event.type, id: event.id });
 
+  async function setPetBoosted(petId: string | null, userId: string, boosted: boolean) {
+    if (!petId) return;
+    const { error } = await supabaseAdmin
+      .from("lost_pets")
+      .update({ boosted, boosted_at: boosted ? new Date().toISOString() : null })
+      .eq("id", petId)
+      .eq("user_id", userId);
+    if (error) logStep("Pet boosted flag update error", { error: error.message });
+  }
+
+  // A subscription checkout's first invoice fires checkout.session.completed; we
+  // record the boost row here, keyed by the Stripe subscription id so later
+  // lifecycle events (renewal, cancellation) can find and update it.
   const recordBoostFromSession = async (session: Stripe.Checkout.Session) => {
     try {
       const tier = session.metadata?.tier ?? "";
       const petId = session.metadata?.pet_id || null;
       const userId = (session.metadata?.supabase_user_id as string | undefined) || session.client_reference_id || null;
+      const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
       if (!isBoostTierKey(tier)) {
         logStep("Payment not a known boost tier", { tier });
         return;
       }
-      if (!userId) {
-        logStep("No user id on boost session", { sessionId: session.id });
+      if (!userId || !subscriptionId) {
+        logStep("Missing user id or subscription id on boost session", { sessionId: session.id });
         return;
       }
 
       const meta = BOOST_TIERS[tier];
-      const purchasedAt = new Date();
-      const expiresAt = new Date(purchasedAt.getTime() + meta.durationDays * 24 * 60 * 60 * 1000);
+      const priceId = (await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 })).data[0]?.price?.id ?? null;
 
       const { error: insertError } = await supabaseAdmin.from("alert_boosts").insert({
         user_id: userId,
+        pet_id: petId,
         tier,
         stripe_session_id: session.id,
-        stripe_price_id:
-          typeof session.line_items === "undefined"
-            ? null
-            : (await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 })).data[0]?.price?.id ?? null,
+        stripe_subscription_id: subscriptionId,
+        stripe_price_id: priceId,
         amount_cents: session.amount_total ?? meta.amountCents,
-        duration_days: meta.durationDays,
         radius_miles: meta.radiusMiles,
-        purchased_at: purchasedAt.toISOString(),
-        expires_at: expiresAt.toISOString(),
+        status: "active",
+        purchased_at: new Date().toISOString(),
+        expires_at: null,
       });
       if (insertError) {
         logStep("Boost insert error", { error: insertError.message });
         return;
       }
 
-      if (petId) {
-        const { error: petUpdateError } = await supabaseAdmin
-          .from("lost_pets")
-          .update({ boosted: true, boosted_at: purchasedAt.toISOString() })
-          .eq("id", petId)
-          .eq("user_id", userId);
-        if (petUpdateError) logStep("Pet boosted flag update error", { error: petUpdateError.message });
-      }
-
-      logStep("Boost recorded", { user_id: userId, tier, expires_at: expiresAt.toISOString() });
+      await setPetBoosted(petId, userId, true);
+      logStep("Boost subscription recorded", { user_id: userId, tier, subscriptionId });
     } catch (err) {
       logStep("Boost handler error", { error: (err as Error).message });
     }
+  };
+
+  // Subscription renewed/still active (covers trialing too) — make sure the row
+  // and the pet's boosted flag reflect that.
+  const handleSubscriptionActive = async (sub: Stripe.Subscription) => {
+    const { data: row } = await supabaseAdmin
+      .from("alert_boosts")
+      .select("user_id, pet_id")
+      .eq("stripe_subscription_id", sub.id)
+      .maybeSingle();
+    if (!row) {
+      logStep("No boost row for active subscription", { subscriptionId: sub.id });
+      return;
+    }
+    await supabaseAdmin.from("alert_boosts").update({ status: "active" }).eq("stripe_subscription_id", sub.id);
+    await setPetBoosted(row.pet_id, row.user_id, true);
+  };
+
+  // Subscription canceled, or payment failed and Stripe gave up (unpaid) — turn
+  // the boost off.
+  const handleSubscriptionInactive = async (sub: Stripe.Subscription, status: string) => {
+    const { data: row } = await supabaseAdmin
+      .from("alert_boosts")
+      .select("user_id, pet_id")
+      .eq("stripe_subscription_id", sub.id)
+      .maybeSingle();
+    if (!row) {
+      logStep("No boost row for inactive subscription", { subscriptionId: sub.id });
+      return;
+    }
+    await supabaseAdmin.from("alert_boosts").update({ status }).eq("stripe_subscription_id", sub.id);
+    await setPetBoosted(row.pet_id, row.user_id, false);
+    logStep("Boost subscription deactivated", { subscriptionId: sub.id, status });
   };
 
   try {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        if (session.mode === "payment") {
+        if (session.mode === "subscription") {
           await recordBoostFromSession(session);
         }
+        break;
+      }
+      case "customer.subscription.updated": {
+        const sub = event.data.object as Stripe.Subscription;
+        if (sub.status === "active" || sub.status === "trialing") {
+          await handleSubscriptionActive(sub);
+        } else if (sub.status === "past_due" || sub.status === "unpaid" || sub.status === "incomplete_expired") {
+          await handleSubscriptionInactive(sub, "past_due");
+        }
+        break;
+      }
+      case "customer.subscription.deleted": {
+        const sub = event.data.object as Stripe.Subscription;
+        await handleSubscriptionInactive(sub, "canceled");
         break;
       }
       default:

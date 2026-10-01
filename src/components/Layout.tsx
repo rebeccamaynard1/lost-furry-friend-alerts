@@ -1,13 +1,27 @@
+import { useState } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 
 export default function Layout() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const [loadingPortal, setLoadingPortal] = useState(false)
 
   async function handleSignOut() {
     await signOut()
     navigate('/')
+  }
+
+  async function handleManageBilling() {
+    setLoadingPortal(true)
+    const { data, error } = await supabase.functions.invoke('customer-portal')
+    setLoadingPortal(false)
+    if (error || !data?.url) {
+      alert(error?.message ?? "Couldn't open billing portal — you may not have a subscription yet.")
+      return
+    }
+    window.location.href = data.url
   }
 
   return (
@@ -32,6 +46,9 @@ export default function Layout() {
                 <Link to="/report" className="hover:underline">
                   Report a Pet
                 </Link>
+                <button onClick={handleManageBilling} disabled={loadingPortal} className="hover:underline">
+                  {loadingPortal ? 'Opening…' : 'Manage billing'}
+                </button>
                 <button onClick={handleSignOut} className="text-neutral-500 hover:underline">
                   Sign out
                 </button>

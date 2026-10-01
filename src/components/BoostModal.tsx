@@ -38,7 +38,7 @@ export default function BoostModal({ petId, onClose }: BoostModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-2xl rounded-xl bg-white p-6 dark:bg-neutral-900">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Boost this alert</h2>
+          <h2 className="text-xl font-semibold">Boost this alert (monthly subscription)</h2>
           <button onClick={onClose} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
             ✕
           </button>
@@ -64,7 +64,7 @@ export default function BoostModal({ petId, onClose }: BoostModalProps) {
                 disabled={loadingTier !== null}
                 className="mt-4 rounded-lg bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900"
               >
-                {loadingTier === tier.key ? 'Redirecting…' : 'Choose'}
+                {loadingTier === tier.key ? 'Redirecting…' : 'Subscribe'}
               </button>
             </div>
           ))}
